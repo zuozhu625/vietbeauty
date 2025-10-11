@@ -1,0 +1,152 @@
+---
+/**
+ * 结构化数据组件
+ * 
+ * 重要：所有结构化数据在上线前必须通过以下工具测试（避免坑2）：
+ * 1. Google Rich Results Test: https://search.google.com/test/rich-results
+ * 2. Schema.org Validator: https://validator.schema.org/
+ * 
+ * 确保所有必填字段都已包含！
+ */
+
+interface Props {
+  type: 'website' | 'organization' | 'medicalBusiness' | 'article' | 'faqPage';
+  data?: any;
+}
+
+const { type, data = {} } = Astro.props;
+const SITE_URL = 'https://vietbeauty.top';
+
+// 网站基础结构化数据
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam",
+  "alternateName": "Vietnam Beauty Guide",
+  "url": SITE_URL,
+  "description": "Nền tảng phẫu thuật thẩm mỹ chuyên nghiệp Việt Nam - Cung cấp tư vấn và dịch vụ phẫu thuật thẩm mỹ uy tín nhất",
+  "inLanguage": "vi-VN",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": `${SITE_URL}/knowledge?q={search_term_string}`
+    },
+    "query-input": "required name=search_term_string"
+  }
+};
+
+// 组织结构化数据
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam",
+  "url": SITE_URL,
+  "logo": `${SITE_URL}/images/logo.png`,
+  "description": "Nền tảng phẫu thuật thẩm mỹ chuyên nghiệp Việt Nam",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "TP.HCM",
+    "addressCountry": "VN"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "areaServed": "VN",
+    "availableLanguage": ["Vietnamese", "English"]
+  },
+  "sameAs": [
+    // 可以添加社交媒体链接
+  ]
+};
+
+// 医疗业务结构化数据（必填字段都已包含）
+const medicalBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "MedicalBusiness",
+  "name": data.name || "Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam",
+  "image": data.image || `${SITE_URL}/images/hero.webp`,
+  "description": data.description || "Nền tảng phẫu thuật thẩm mỹ chuyên nghiệp Việt Nam",
+  "url": data.url || SITE_URL,
+  // 必填字段：地址
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": data.streetAddress || "Quận 1",
+    "addressLocality": data.city || "TP.HCM",
+    "addressRegion": data.region || "TP.HCM",
+    "postalCode": data.postalCode || "700000",
+    "addressCountry": "VN"
+  },
+  // 必填字段：联系信息
+  "telephone": data.telephone || "+84 921000789",
+  "priceRange": "$$-$$$"
+};
+
+// 文章结构化数据（必填字段都已包含）
+const articleSchema = data.title ? {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": data.title,
+  "description": data.description || data.content?.substring(0, 150),
+  "image": data.image || `${SITE_URL}/images/hero.webp`,
+  "datePublished": data.datePublished || data.created_at,
+  "dateModified": data.dateModified || data.updated_at || data.created_at,
+  "author": {
+    "@type": "Organization",
+    "name": "Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam",
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${SITE_URL}/images/logo.png`
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": data.url || SITE_URL
+  }
+} : null;
+
+// FAQ页面结构化数据
+const faqPageSchema = data.questions && data.questions.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": data.questions.map((q: any) => ({
+    "@type": "Question",
+    "name": q.question || q.name,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": q.answer || q.text
+    }
+  }))
+} : null;
+
+// 根据类型选择schema
+let schema;
+switch (type) {
+  case 'website':
+    schema = websiteSchema;
+    break;
+  case 'organization':
+    schema = organizationSchema;
+    break;
+  case 'medicalBusiness':
+    schema = medicalBusinessSchema;
+    break;
+  case 'article':
+    schema = articleSchema;
+    break;
+  case 'faqPage':
+    schema = faqPageSchema;
+    break;
+  default:
+    schema = websiteSchema;
+}
+---
+
+{schema && (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+)}
+

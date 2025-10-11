@@ -1,0 +1,253 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import '../../styles/global.css';
+import { knowledgeAPI } from '../../utils/api.js';
+
+// 获取路由参数
+const { id } = Astro.params;
+
+// 为静态生成提供路径
+export async function getStaticPaths() {
+  try {
+    const response = await knowledgeAPI.getList({ limit: 100, status: 'published' });
+    const knowledge = response.data || [];
+    
+    return knowledge.map((item) => ({
+      params: { id: item.id.toString() },
+      props: { knowledge: item }
+    }));
+  } catch (error) {
+    console.error('获取静态路径失败:', error);
+    // 返回一些默认路径
+    return [
+      { params: { id: '1' }, props: { knowledge: null } },
+      { params: { id: '2' }, props: { knowledge: null } },
+      { params: { id: '3' }, props: { knowledge: null } }
+    ];
+  }
+}
+
+// 获取问答详情数据
+let knowledgeDetail = null;
+try {
+  const response = await knowledgeAPI.getDetail(id);
+  knowledgeDetail = response.data;
+} catch (error) {
+  console.error('获取问答详情失败:', error);
+  // 使用默认数据作为后备
+  knowledgeDetail = {
+    id: id,
+    question: 'Phẫu thuật mũi cần bao lâu để phục hồi?',
+    answer: 'Thời gian phục hồi phẫu thuật mũi khác nhau tùy theo thể chất cá nhân và phương pháp phẫu thuật. Nhìn chung:\n\n• Phục hồi ban đầu: 1-2 tuần, có thể làm việc và sinh hoạt bình thường\n• Phục hồi cơ bản: 1-3 tháng, ngoại hình ổn định cơ bản\n• Phục hồi hoàn toàn: 6-12 tháng, hiệu quả cuối cùng xuất hiện\n\nLưu ý sau phẫu thuật: Tránh vận động mạnh, giữ vết thương sạch sẽ, tái khám đúng hẹn, tránh va chạm, v.v.',
+    category: 'Phẫu thuật mũi',
+    doctor_name: 'Bác sĩ Trần Văn A',
+    doctor_title: 'Trưởng khoa phẫu thuật thẩm mỹ',
+    doctor_hospital: 'Bệnh viện thẩm mỹ TP.HCM',
+    doctor_experience: '15 năm kinh nghiệm',
+    like_count: 128,
+    view_count: 1250,
+    comment_count: 15,
+    created_at: new Date('2024-03-15'),
+    updated_at: new Date('2024-03-15'),
+    questioner_name: 'Chị Lý',
+    questioner_age: 28
+  };
+}
+
+// 如果没有找到数据，返回404
+if (!knowledgeDetail) {
+  return Astro.redirect('/404');
+}
+
+// 获取相关问答（同分类，排除当前问答，最多6条）
+let relatedKnowledge = [];
+try {
+  const relatedResponse = await knowledgeAPI.getList({ 
+    category: knowledgeDetail.category,
+    limit: 7,
+    status: 'published'
+  });
+  relatedKnowledge = (relatedResponse.data || []).filter(item => item.id.toString() !== id).slice(0, 6);
+} catch (error) {
+  console.error('获取相关问答失败:', error);
+}
+---
+
+<Layout title={`${knowledgeDetail.question} | Hỏi đáp`}>
+  <!-- 返回按钮 -->
+  <section class="pt-24 pb-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <a href="/knowledge" class="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Quay lại danh sách hỏi đáp
+      </a>
+    </div>
+  </section>
+
+  <!-- 主要内容 -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="glass rounded-2xl p-6 lg:p-8">
+        <!-- 问题部分 -->
+        <div class="mb-8">
+          <div class="flex items-start mb-6">
+            <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold mr-4 flex-shrink-0">
+              Q
+            </div>
+            <div class="flex-1">
+              <h1 class="text-white font-bold text-xl lg:text-2xl leading-tight mb-3">
+                {knowledgeDetail.question}
+              </h1>
+              <div class="flex flex-wrap items-center gap-4 text-sm text-white/60">
+                <span>Người hỏi: {knowledgeDetail.questioner_name}</span>
+                <span>•</span>
+                <span>{knowledgeDetail.questioner_age} tuổi</span>
+                <span>•</span>
+                <span>{knowledgeDetail.created_at ? new Date(knowledgeDetail.created_at).toLocaleDateString('vi-VN') : 'Ngày không xác định'}</span>
+                <span class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md">
+                  {knowledgeDetail.category}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 医生回答部分 -->
+        <div class="bg-white/5 rounded-xl p-6 border-l-4 border-green-400 mb-8">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold mr-4">
+              A
+            </div>
+            <div>
+              <h2 class="text-white font-bold text-lg">{knowledgeDetail.doctor_name}</h2>
+              <p class="text-white/80 text-sm">{knowledgeDetail.doctor_title}</p>
+              <p class="text-white/60 text-sm">{knowledgeDetail.doctor_hospital}</p>
+              <p class="text-green-400 text-xs">{knowledgeDetail.doctor_experience}</p>
+            </div>
+          </div>
+          
+          <div class="prose prose-invert max-w-none">
+            <p class="text-white/90 leading-relaxed whitespace-pre-line">{knowledgeDetail.answer}</p>
+          </div>
+          
+          <div class="mt-4 pt-4 border-t border-white/10">
+            <p class="text-white/60 text-sm">
+              Trả lời ngày: {knowledgeDetail.updated_at ? new Date(knowledgeDetail.updated_at).toLocaleDateString('vi-VN') : 'Ngày không xác định'}
+            </p>
+          </div>
+        </div>
+
+        <!-- 互动统计 -->
+        <div class="flex items-center justify-between py-6 border-t border-white/10 border-b border-white/10 mb-8">
+          <div class="flex items-center space-x-6">
+            <button class="flex items-center text-white/60 hover:text-green-400 transition-colors">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+              </svg>
+              {knowledgeDetail.like_count} hữu ích
+            </button>
+            <span class="flex items-center text-white/60">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              {knowledgeDetail.view_count} lượt xem
+            </span>
+          </div>
+          <div class="flex space-x-2">
+            <button 
+              id="shareButton"
+              class="btn-primary px-6 py-2 text-sm"
+              onclick="
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                  const btn = document.getElementById('shareButton');
+                  const originalText = btn.innerHTML;
+                  btn.innerHTML = '✅ Đã sao chép liên kết';
+                  btn.classList.add('bg-green-500');
+                  setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-green-500');
+                  }, 2000);
+                });
+              "
+            >
+              🔗 Chia sẻ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 相关问答推荐 -->
+  {relatedKnowledge.length > 0 && (
+    <section class="pb-20 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold gradient-text-blue mb-4">Câu hỏi liên quan</h2>
+          <p class="text-white/70">Các câu hỏi khác trong cùng chủ đề</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {relatedKnowledge.map((item) => (
+            <div class="media-card h-[340px] flex flex-col">
+              <!-- 标题区域 -->
+              <div class="flex-shrink-0 mb-4">
+                <div class="flex items-start justify-between mb-3">
+                  <span class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-semibold">
+                    {item.category}
+                  </span>
+                </div>
+                <h3 class="text-white font-bold text-lg line-clamp-2 h-14 leading-tight">
+                  {item.question}
+                </h3>
+              </div>
+              
+              <!-- 回答预览 -->
+              <div class="flex-shrink-0 mb-4">
+                <p class="text-white/70 text-sm line-clamp-3 h-16 leading-relaxed">
+                  {item.answer}
+                </p>
+              </div>
+              
+              <!-- 底部信息 - 自动推到底部 -->
+              <div class="mt-auto flex-shrink-0 pt-4 border-t border-white/10">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4 text-white/60 text-sm">
+                    <span class="flex items-center gap-1">
+                      👍 {item.like_count || 0}
+                    </span>
+                    <span class="flex items-center gap-1">
+                      👁️ {item.view_count || 0}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2 flex-1 justify-center">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      BS
+                    </div>
+                    <span class="text-white/80 text-sm truncate max-w-[100px]">
+                      {item.doctor_name || 'Bác sĩ'}
+                    </span>
+                  </div>
+                  <a 
+                    href={`/knowledge/${item.id}`}
+                    class="text-blue-400 hover:text-blue-300 transition-colors text-sm font-medium whitespace-nowrap"
+                  >
+                    Chi tiết →
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</Layout>
+
+<script>
+  // 复制链接功能已内联在按钮的onclick中
+</script>

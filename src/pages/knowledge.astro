@@ -1,0 +1,343 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+import { knowledgeAPI } from '../utils/api.js';
+
+// Lấy tham số URL
+const url = new URL(Astro.request.url);
+const page = parseInt(url.searchParams.get('page')) || 1;
+const category = url.searchParams.get('category') || ''; // 获取分类参数
+const limit = 36; // Mỗi trang 36 khối media
+const offset = (page - 1) * limit;
+
+// Lấy dữ liệu hỏi đáp
+let knowledgeItems = [];
+let totalCount = 0;
+let totalPages = 0;
+
+try {
+  const params = { 
+    page: page,
+    limit: limit, 
+    status: 'published'
+  };
+  
+  // 如果有分类参数，添加到请求中
+  if (category) {
+    params.category = category;
+  }
+  
+  const response = await knowledgeAPI.getList(params);
+  knowledgeItems = response.data || [];
+  totalCount = response.pagination?.total || 0;
+  totalPages = response.pagination?.pages || 0;
+} catch (error) {
+  console.error('Lấy dữ liệu hỏi đáp thất bại:', error);
+  // Sử dụng dữ liệu mặc định làm dự phòng
+  knowledgeItems = [
+    {
+      id: 1,
+      question: 'Phẫu thuật mũi cần bao lâu để phục hồi?',
+      answer: 'Nhìn chung, phẫu thuật mũi cần 1-2 tuần để phục hồi ban đầu, hoàn toàn phục hồi cần 3-6 tháng. Thời gian phục hồi cụ thể phụ thuộc vào thể chất cá nhân và phương pháp phẫu thuật...',
+      category: 'Phẫu thuật mũi',
+      doctor_name: 'Bác sĩ phẫu thuật thẩm mỹ',
+      like_count: 128,
+      view_count: 256,
+      created_at: new Date('2024-03-10')
+    },
+    {
+      id: 2,
+      question: 'Phẫu thuật mắt hai mí có những cách nào?',
+      answer: 'Chủ yếu có phương pháp cắt mí, phương pháp khâu chỉ và phương pháp ba điểm kiểu Hàn, mỗi phương pháp phù hợp với điều kiện mắt khác nhau. Phương pháp cắt mí phù hợp với hầu hết các loại mắt...',
+      category: 'Phẫu thuật mắt',
+      doctor_name: 'Chuyên gia phẫu thuật mắt',
+      like_count: 95,
+      view_count: 198,
+      created_at: new Date('2024-03-11')
+    },
+    {
+      id: 3,
+      question: 'Làm thế nào để đánh giá rủi ro phẫu thuật thẩm mỹ?',
+      answer: 'Trước khi phẫu thuật cần tiến hành kiểm tra sức khỏe toàn diện, đánh giá thể chất cá nhân và khả năng thích ứng phẫu thuật. Đồng thời cần chọn bệnh viện có tư cách và bác sĩ có kinh nghiệm...',
+      category: 'Tư vấn chung',
+      doctor_name: 'Bác sĩ gây mê',
+      like_count: 156,
+      view_count: 289,
+      created_at: new Date('2024-03-12')
+    },
+    {
+      id: 4,
+      question: 'Làm thế nào để chọn bệnh viện phẫu thuật thẩm mỹ phù hợp?',
+      answer: 'Nên xem xét các yếu tố như tư cách bệnh viện, kinh nghiệm bác sĩ, điều kiện thiết bị và dịch vụ sau phẫu thuật. Tốt nhất là tới thực tế khảo sát bệnh viện, trao đổi với bác sĩ...',
+      category: 'Tư vấn chung',
+      doctor_name: 'Cố vấn y tế',
+      like_count: 234,
+      view_count: 445,
+      created_at: new Date('2024-03-13')
+    },
+    {
+      id: 5,
+      question: 'Chăm sóc sau phẫu thuật cần chú ý gì?',
+      answer: 'Chăm sóc sau phẫu thuật bao gồm làm sạch vết thương, uống thuốc đúng giờ, tránh vận động mạnh và nhiều khía cạnh khác. Cần tuân thủ nghiêm ngặt lời dặn của bác sĩ, tái khám đúng hẹn...',
+      category: 'Chăm sóc sau phẫu thuật',
+      doctor_name: 'Chuyên gia chăm sóc',
+      like_count: 178,
+      view_count: 334,
+      created_at: new Date('2024-03-14')
+    },
+    {
+      id: 6,
+      question: 'Chi phí phẫu thuật thẩm mỹ thường là bao nhiêu?',
+      answer: 'Chi phí khác nhau tùy theo dự án và bệnh viện, nên chọn bệnh viện có tỷ lệ giá trị cao, đừng chỉ nhìn vào giá cả. Trước khi phẫu thuật cần hỏi rõ danh sách giá và các chi phí liên quan...',
+      category: 'Tư vấn giá',
+      doctor_name: 'Cố vấn giá',
+      like_count: 267,
+      view_count: 523,
+      created_at: new Date('2024-03-15')
+    },
+    {
+      id: 7,
+      question: 'Độ tuổi nào phù hợp để làm phẫu thuật thẩm mỹ?',
+      answer: 'Nhìn chung phù hợp nhất là từ 18-50 tuổi, cơ thể đã phát triển hoàn toàn và khả năng phục hồi tốt. Các dự án khác nhau có yêu cầu độ tuổi khác nhau, cần tư vấn với bác sĩ chuyên nghiệp...',
+      category: 'Tư vấn chung',
+      doctor_name: 'Bác sĩ phẫu thuật thẩm mỹ',
+      like_count: 189,
+      view_count: 367,
+      created_at: new Date('2024-03-16')
+    },
+    {
+      id: 8,
+      question: 'Phẫu thuật thẩm mỹ có an toàn không?',
+      answer: 'Phẫu thuật thẩm mỹ hiện đại có mức độ an toàn cao, nhưng vẫn tồn tại rủi ro nhất định. Chọn bệnh viện chính quy và bác sĩ có kinh nghiệm có thể giảm thiểu rủi ro tối đa...',
+      category: 'Tư vấn chung',
+      doctor_name: 'Bác sĩ gây mê',
+      like_count: 312,
+      view_count: 589,
+      created_at: new Date('2024-03-17')
+    }
+  ];
+  totalCount = knowledgeItems.length;
+  totalPages = 1;
+}
+---
+
+<Layout 
+  title="Hỏi đáp phẫu thuật thẩm mỹ - Bác sĩ chuyên khoa tư vấn miễn phí"
+  description="Hỏi đáp trực tuyến với bác sĩ phẫu thuật thẩm mỹ chuyên nghiệp. Giải đáp thắc mắc về nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da, niềng răng. Tư vấn bệnh viện uy tín, chi phí, quy trình, rủi ro, chăm sóc sau phẫu thuật. Miễn phí 100%"
+  keywords="hỏi đáp phẫu thuật thẩm mỹ, tư vấn bác sĩ thẩm mỹ miễn phí, câu hỏi nâng mũi, cắt mí có đau không, gọt mặt an toàn không, nâng ngực hồi phục bao lâu, hút mỡ bụng giá bao nhiêu, làm đẹp da mặt hiệu quả, niềng răng mất bao lâu, botox có tác dụng phụ không, căng da mặt có đau không, chi phí phẫu thuật thẩm mỹ, thời gian hồi phục, rủi ro phẫu thuật, biến chứng phẫu thuật, chọn bệnh viện thẩm mỹ, bác sĩ nào giỏi, tư vấn bệnh viện miễn phí, địa chỉ bệnh viện uy tín, số điện thoại bệnh viện, đội ngũ bác sĩ chuyên khoa, chứng nhận bệnh viện, hạng bệnh viện, dịch vụ bệnh viện, hỏi bác sĩ trực tuyến, kinh nghiệm phẫu thuật, quy trình thẩm mỹ, chuẩn bị trước phẫu thuật, chăm sóc sau phẫu thuật, phục hồi sau sinh, thẩm mỹ khuôn mặt, thẩm mỹ ngực, hút mỡ tạo dáng, phẫu thuật an toàn, bác sĩ tư vấn chuyên nghiệp, tư vấn chi phí miễn phí, đánh giá bệnh viện thẩm mỹ, review bác sĩ, câu hỏi thường gặp, giải đáp thắc mắc, tư vấn trực tuyến 24/7"
+>
+  <!-- Đầu trang -->
+  <section class="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto text-center">
+      <h1 class="text-5xl font-bold gradient-text-blue mb-6">Hỏi đáp</h1>
+      <p class="text-white/70 text-xl max-w-3xl mx-auto">
+        Bác sĩ chuyên nghiệp giải đáp các vấn đề liên quan đến phẫu thuật thẩm mỹ, giúp bạn đưa ra quyết định thông minh
+      </p>
+    </div>
+  </section>
+
+  <!-- Lọc danh mục -->
+  <section class="pb-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="glass rounded-2xl p-6">
+        <div class="flex gap-3 justify-start overflow-x-auto pb-2" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;">
+          <!-- 使用横向滚动确保标签在一行显示 -->
+          <!-- Tất cả câu hỏi -->
+          <a 
+            href="/knowledge" 
+            class={`px-6 py-3 rounded-xl border transition-all whitespace-nowrap ${!category ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 hover:bg-blue-500/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Tất cả câu hỏi
+          </a>
+          
+          <!-- Thẩm mỹ khuôn mặt (面部美容) -->
+          <a 
+            href="/knowledge?category=Thẩm mỹ khuôn mặt" 
+            class={`px-6 py-3 rounded-xl border transition-all whitespace-nowrap ${category === 'Thẩm mỹ khuôn mặt' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 hover:bg-blue-500/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Thẩm mỹ khuôn mặt
+          </a>
+          
+          <!-- Thẩm mỹ ngực (胸部美容) -->
+          <a 
+            href="/knowledge?category=Thẩm mỹ ngực" 
+            class={`px-6 py-3 rounded-xl border transition-all whitespace-nowrap ${category === 'Thẩm mỹ ngực' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 hover:bg-blue-500/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Thẩm mỹ ngực
+          </a>
+          
+          <!-- Hút mỡ tạo dáng (吸脂塑形) -->
+          <a 
+            href="/knowledge?category=Hút mỡ tạo dáng" 
+            class={`px-6 py-3 rounded-xl border transition-all whitespace-nowrap ${category === 'Hút mỡ tạo dáng' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 hover:bg-blue-500/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Hút mỡ tạo dáng
+          </a>
+          
+          <!-- Phục hồi sau sinh (产后修复) -->
+          <a 
+            href="/knowledge?category=Phục hồi sau sinh" 
+            class={`px-6 py-3 rounded-xl border transition-all whitespace-nowrap ${category === 'Phục hồi sau sinh' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 hover:bg-blue-500/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Phục hồi sau sinh
+          </a>
+          
+          <!-- Niềng răng (牙齿矫正) -->
+          <a 
+            href="/knowledge?category=Niềng răng" 
+            class={`px-6 py-3 rounded-xl border transition-all whitespace-nowrap ${category === 'Niềng răng' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 hover:bg-blue-500/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Niềng răng
+          </a>
+          
+          <!-- Tư vấn bệnh viện (医院问答) - 新增DQA分类 -->
+          <a 
+            href="/knowledge?category=Tư vấn bệnh viện" 
+            class={`px-6 py-3 rounded-xl border transition-all whitespace-nowrap ${category === 'Tư vấn bệnh viện' ? 'bg-green-500/20 text-green-400 border-green-400/30 hover:bg-green-500/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Tư vấn bệnh viện
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nội dung hỏi đáp -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- Lưới khối media - bố cục 3 cột -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {knowledgeItems.map((item) => {
+          // 生成随机数据
+          const randomViews = Math.floor(Math.random() * 501) + 500; // 500-1000
+          const randomLikes = Math.floor(Math.random() * 151) + 50;  // 50-200
+          
+          // 格式化完整的日期和时间 - 使用数据库中的上传时间
+          let uploadDateTime = '';
+          try {
+            // 尝试解析 created_at 或 createdAt 字段
+            const timeStr = item.created_at || item.createdAt || item.updated_at || item.updatedAt;
+            if (timeStr) {
+              const date = new Date(timeStr);
+              // 格式化为越南时区的时间
+              uploadDateTime = date.toLocaleString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Ho_Chi_Minh'
+              });
+            } else {
+              uploadDateTime = 'Chưa rõ thời gian';
+            }
+          } catch (e) {
+            uploadDateTime = 'Chưa rõ thời gian';
+          }
+          
+          return (
+          <a href={`/knowledge/${item.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[320px] flex flex-col">
+            
+            <!-- Tiêu đề câu hỏi - 固定高度 -->
+            <div class="mb-4 flex-shrink-0">
+              <h3 class="text-white font-semibold text-base group-hover:text-blue-400 transition-colors line-clamp-2 mb-3 h-12">
+                {item.question || 'Câu hỏi'}
+              </h3>
+              <span class="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+                {item.category || 'Tư vấn chung'}
+              </span>
+            </div>
+            
+            <!-- Nội dung câu trả lời - 填满空间，超出显示省略号 -->
+            <div class="mb-4 flex-grow overflow-hidden relative">
+              <p class="text-white/80 text-sm leading-relaxed line-clamp-[10]">
+                {item.answer || 'Bác sĩ sẽ giải đáp câu hỏi của bạn...'}
+              </p>
+            </div>
+            
+            <!-- Thông tin bác sĩ và thống kê - 固定高度，单行显示 -->
+            <div class="pt-4 border-t border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between">
+                <!-- 左侧：统计数据 -->
+                <div class="flex items-center space-x-3 text-xs">
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                    </svg>
+                    {randomLikes}
+                  </span>
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {randomViews}
+                  </span>
+                </div>
+                
+                <!-- 中间：上传时间 -->
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-white/60 text-xs">{uploadDateTime}</span>
+                </div>
+                
+                <!-- 右侧：详情链接 -->
+                <span class="text-blue-400 group-hover:text-blue-300 transition-colors text-xs">
+                  Chi tiết →
+                </span>
+              </div>
+            </div>
+          </a>
+          );
+        })}
+      </div>
+
+      <!-- Điều hướng phân trang -->
+      {totalPages > 1 && (
+        <div class="flex justify-center items-center mt-12 space-x-2">
+          <!-- Trang trước -->
+          {page > 1 && (
+            <a href={`/knowledge?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
+              Trang trước
+            </a>
+          )}
+          
+          <!-- Số trang -->
+          {page > 3 && totalPages > 5 && (
+            <a href={`/knowledge?page=1${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">1</a>
+          )}
+          {page > 4 && totalPages > 5 && (
+            <span class="px-2 text-white/50">...</span>
+          )}
+          
+          {page > 2 && (
+            <a href={`/knowledge?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page - 1}</a>
+          )}
+          
+          <a href={`/knowledge?page=${page}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-blue-500 text-white rounded-lg">{page}</a>
+          
+          {page < totalPages - 1 && (
+            <a href={`/knowledge?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page + 1}</a>
+          )}
+          
+          {page < totalPages - 3 && totalPages > 5 && (
+            <span class="px-2 text-white/50">...</span>
+          )}
+          {page < totalPages - 2 && totalPages > 5 && (
+            <a href={`/knowledge?page=${totalPages}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{totalPages}</a>
+          )}
+          
+          <!-- Trang sau -->
+          {page < totalPages && (
+            <a href={`/knowledge?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
+              Trang sau
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>

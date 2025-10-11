@@ -1,0 +1,192 @@
+---
+import '../styles/global.css';
+import Navigation from '../components/Navigation.astro';
+import StructuredData from '../components/StructuredData.astro';
+
+export interface Props {
+  title: string;
+  description?: string;
+  keywords?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const { 
+  title, 
+  description = "Nền tảng phẫu thuật thẩm mỹ chuyên nghiệp Việt Nam - Cung cấp tư vấn và dịch vụ phẫu thuật thẩm mỹ chuyên nghiệp",
+  keywords = "phẫu thuật thẩm mỹ Việt Nam, nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da, bệnh viện thẩm mỹ",
+  image = "/images/hero.webp",
+  type = "website",
+  noindex = false
+} = Astro.props;
+
+const SITE_URL = 'https://vietbeauty.top';
+const canonicalURL = new URL(Astro.url.pathname, SITE_URL).href;
+const ogImage = new URL(image, SITE_URL).href;
+
+// 确保生产环境不被索引问题（避免坑4）
+const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'production';
+---
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <!-- 基础 Meta 标签 -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- SEO Meta 标签 -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords} />
+    <link rel="canonical" href={canonicalURL} />
+    
+    <!-- Robots Meta（避免坑4 - 确保生产环境可被索引） -->
+    {noindex || !isProduction ? (
+      <meta name="robots" content="noindex, nofollow" />
+    ) : (
+      <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    )}
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam" />
+    <meta property="og:locale" content="vi_VN" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    
+    <!-- Additional SEO -->
+    <meta name="author" content="Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam" />
+    <meta name="language" content="Vietnamese" />
+    <meta name="geo.region" content="VN" />
+    <meta name="geo.placename" content="Vietnam" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
+    
+    <!-- DNS Prefetch for Performance -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    
+    <!-- Custom Head Content -->
+    <slot name="head" />
+    
+    <!-- 结构化数据 -->
+    <StructuredData type="website" />
+    <StructuredData type="organization" />
+    
+    <!-- Fonts -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    </style>
+  </head>
+  <body class="bg-cursor-bg min-h-screen font-inter">
+    <!-- 导航栏 -->
+    <Navigation />
+
+    <!-- 主要内容 -->
+    <main class="pt-16">
+      <slot />
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-black/30 backdrop-blur-md border-t border-white/10 mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- 品牌介绍 -->
+          <div>
+            <h3 class="text-xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-4 leading-tight">
+              Việt Nam Lý Nhân<br>Thẩm Mỹ Chỉ Nam
+            </h3>
+            <p class="text-white/70 text-sm leading-relaxed">
+              Nền tảng thẩm mỹ uy tín #1 Việt Nam, cung cấp tư vấn chuyên nghiệp, thông tin bệnh viện đáng tin cậy và hướng dẫn dịch vụ tận tình.
+            </p>
+          </div>
+          
+          <!-- 快速链接 -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">Liên kết nhanh</h4>
+            <ul class="space-y-2">
+              <li><a href="/" class="text-white/70 hover:text-pink-400 transition-colors duration-300 text-sm">Trang chủ</a></li>
+              <li><a href="/sharing" class="text-white/70 hover:text-pink-400 transition-colors duration-300 text-sm">Chia sẻ người dùng</a></li>
+              <li><a href="/knowledge" class="text-white/70 hover:text-pink-400 transition-colors duration-300 text-sm">Hỏi đáp</a></li>
+              <li><a href="/reviews" class="text-white/70 hover:text-pink-400 transition-colors duration-300 text-sm">Giới thiệu bệnh viện</a></li>
+              <li><a href="/services" class="text-white/70 hover:text-pink-400 transition-colors duration-300 text-sm">Nội dung dịch vụ</a></li>
+              <li><a href="/contact" class="text-white/70 hover:text-pink-400 transition-colors duration-300 text-sm">Liên hệ</a></li>
+            </ul>
+          </div>
+          
+          <!-- 联系信息 -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">Thông tin liên hệ</h4>
+            <ul class="space-y-2 text-white/70 text-sm">
+              <li class="flex items-center gap-2">
+                <span>📞</span>
+                <span>Hotline: +84 921000789</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span>📧</span>
+                <span>qikaka625@gmail.com</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span>💬</span>
+                <span>WeChat: HoneyT09</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span>🏢</span>
+                <span>TP.HCM, Hà Nội, Đà Nẵng</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="border-t border-white/10 mt-8 pt-8 text-center">
+          <p class="text-white/60 text-sm">
+            &copy; 2025 Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam. Bảo lưu mọi quyền.
+          </p>
+          <p class="text-white/40 text-xs mt-2">
+            <a href="https://vietbeauty.top" class="hover:text-pink-400 transition-colors">vietbeauty.top</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <style>
+      .font-inter {
+        font-family: 'Inter', sans-serif;
+      }
+      
+      /* 自定义滚动条 */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.5);
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(59, 130, 246, 0.7);
+      }
+    </style>
+  </body>
+</html>

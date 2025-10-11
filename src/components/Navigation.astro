@@ -1,0 +1,57 @@
+---
+// 导航组件
+// 获取当前路径
+const currentPath = Astro.url.pathname;
+
+// 判断当前页面是否激活
+const isActive = (path: string) => {
+  if (path === '/') {
+    return currentPath === '/';
+  }
+  return currentPath.startsWith(path);
+};
+
+// 获取导航项的CSS类
+const getNavClass = (path: string) => {
+  const baseClass = "hover:text-cursor-accent transition-colors duration-300 px-3 py-2 rounded-md text-sm font-medium";
+  const activeClass = "text-cursor-accent";
+  const inactiveClass = "text-cursor-text-muted";
+  
+  return `${baseClass} ${isActive(path) ? activeClass : inactiveClass}`;
+};
+---
+
+<nav class="fixed top-0 w-full z-50 backdrop-blur-md bg-black/20 border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <a href="/" class="text-lg md:text-xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent leading-tight">
+          <div>Việt Nam Lý Nhân</div>
+          <div>Thẩm Mỹ Chỉ Nam</div>
+        </a>
+      </div>
+      
+      <!-- 导航菜单 -->
+      <div class="hidden md:block">
+        <div class="ml-10 flex items-baseline space-x-8">
+          <a href="/" class={getNavClass('/')}>Trang chủ</a>
+          <a href="/sharing" class={getNavClass('/sharing')}>Chia sẻ người dùng</a>
+          <a href="/knowledge" class={getNavClass('/knowledge')}>Hỏi đáp</a>
+          <a href="/reviews" class={getNavClass('/reviews')}>Giới thiệu bệnh viện</a>
+          <a href="/services" class={getNavClass('/services')}>Nội dung dịch vụ</a>
+          <a href="/contact" class={getNavClass('/contact')}>Liên hệ</a>
+        </div>
+      </div>
+      
+      <!-- 移动端菜单按钮 -->
+      <div class="md:hidden">
+        <button type="button" class="text-cursor-text hover:text-cursor-accent transition-colors duration-300">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

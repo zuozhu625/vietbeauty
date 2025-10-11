@@ -1,0 +1,395 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import '../../styles/global.css';
+import { userShareAPI } from '../../utils/api.js';
+
+// 获取路由参数
+const { id } = Astro.params;
+
+// 为静态生成提供路径
+export async function getStaticPaths() {
+  try {
+    const response = await userShareAPI.getList({ limit: 100, status: 'published' });
+    const shares = response.data || [];
+    
+    return shares.map((share) => ({
+      params: { id: share.id.toString() },
+      props: { share }
+    }));
+  } catch (error) {
+    console.error('获取静态路径失败:', error);
+    // 返回一些默认路径
+    return [
+      { params: { id: '1' }, props: { share: null } },
+      { params: { id: '2' }, props: { share: null } },
+      { params: { id: '3' }, props: { share: null } }
+    ];
+  }
+}
+
+// 获取分享详情数据
+let shareDetail = null;
+try {
+  // 首先尝试使用 props 中的数据
+  if (Astro.props.share) {
+    shareDetail = Astro.props.share;
+  } else {
+    // 如果没有 props 数据，则从 API 获取
+    const response = await userShareAPI.getDetail(id);
+    shareDetail = response.data;
+  }
+} catch (error) {
+  console.error('获取分享详情失败:', error);
+  // 使用默认数据作为后备
+  shareDetail = {
+    id: id,
+    user_name: 'Chị Lý',
+    user_avatar: '/images/avatar-default.jpg',
+    age: 28,
+    surgery_type: 'Phẫu thuật mũi',
+    recovery_status: 'Đã phục hồi hoàn toàn',
+    content: 'Chia sẻ chi tiết về quá trình phẫu thuật và phục hồi...',
+    images: ['/images/before-after-1.jpg', '/images/before-after-2.jpg'],
+    like_count: 156,
+    comment_count: 23,
+    view_count: 890,
+    created_at: new Date('2024-03-15'),
+    hospital_name: 'Bệnh viện thẩm mỹ TP.HCM',
+    doctor_name: 'Bác sĩ Trần Văn A',
+    surgery_date: new Date('2024-02-01'),
+    recovery_time: '3 tháng',
+    cost_range: '15-20 triệu VND'
+  };
+}
+
+// 如果没有找到数据，返回404
+if (!shareDetail) {
+  return Astro.redirect('/404');
+}
+
+// 获取相关分享（随机抽取，排除当前ID）
+let relatedShares = [];
+try {
+  // 获取更多数据以便随机抽取
+  const response = await userShareAPI.getList({ 
+    limit: 50, 
+    status: 'published'
+  });
+  
+  if (response.data && response.data.length > 0) {
+    // 过滤掉当前分享
+    const allShares = response.data.filter(share => share.id.toString() !== id);
+    
+    // 随机打乱数组（Fisher-Yates shuffle）
+    for (let i = allShares.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allShares[i], allShares[j]] = [allShares[j], allShares[i]];
+    }
+    
+    // 取前6个
+    relatedShares = allShares.slice(0, 6);
+  }
+} catch (error) {
+  console.error('获取相关分享失败:', error);
+}
+---
+
+<Layout title={`${shareDetail.title || 'Chia sẻ trải nghiệm phẫu thuật thẩm mỹ'} | Chia sẻ`}>
+  <!-- 返回按钮 -->
+  <section class="pt-24 pb-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <a href="/sharing" class="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Quay lại danh sách chia sẻ
+      </a>
+    </div>
+  </section>
+
+  <!-- 主要内容 -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- 新闻式标题区域 -->
+      <div class="mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+          {shareDetail.title || 'Chia sẻ trải nghiệm phẫu thuật thẩm mỹ'}
+        </h1>
+      </div>
+
+      <!-- 文章内容 -->
+      <div class="prose prose-invert prose-lg max-w-none">
+        <div class="text-white/90 leading-relaxed whitespace-pre-line text-lg">
+          {shareDetail.content}
+        </div>
+      </div>
+
+      <!-- 图片展示 -->
+      {shareDetail.images && shareDetail.images.length > 0 && (
+        <div class="mt-12">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {shareDetail.images.map((image, index) => (
+              <div class="overflow-hidden rounded-lg">
+                <img 
+                  src={image} 
+                  alt={`Hình ảnh ${index + 1}`}
+                  class="w-full h-80 object-cover hover:scale-105 transition-transform duration-300"
+                  onerror="this.src='/images/placeholder.jpg'"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <!-- 互动统计 -->
+      <div class="flex items-center justify-between pt-8 mt-12 border-t border-white/10">
+        <div class="flex items-center space-x-6">
+          <button class="flex items-center text-white/60 hover:text-red-400 transition-colors" onclick="handleLike()">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            <span id="like-count">{shareDetail.like_count}</span> thích
+          </button>
+          <span class="flex items-center text-white/60">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            {shareDetail.view_count} lượt xem
+          </span>
+        </div>
+        <div class="flex space-x-2">
+          <button class="btn-primary px-4 py-2 text-sm" onclick="handleShare()">
+            Chia sẻ
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 相关分享 -->
+  {relatedShares.length > 0 && (
+    <section class="pb-20 px-4 sm:px-6 lg:px-8 border-t border-white/10">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12 pt-16">
+          <h2 class="text-3xl font-bold gradient-text-purple mb-4">Chia sẻ liên quan</h2>
+          <p class="text-white/70 text-lg">
+            Khám phá thêm nhiều trải nghiệm khác từ người dùng
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {relatedShares.map((share) => {
+            // 生成随机数据
+            const randomViews = Math.floor(Math.random() * 501) + 500;  // 500-1000
+            const randomLikes = Math.floor(Math.random() * 151) + 50;   // 50-200
+            
+            // 格式化完整的日期和时间
+            let uploadDateTime = '';
+            try {
+              const timeStr = share.created_at || share.createdAt || share.updated_at || share.updatedAt;
+              if (timeStr) {
+                const date = new Date(timeStr);
+                uploadDateTime = date.toLocaleString('vi-VN', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  timeZone: 'Asia/Ho_Chi_Minh'
+                });
+              } else {
+                uploadDateTime = 'Chưa rõ thời gian';
+              }
+            } catch (e) {
+              uploadDateTime = 'Chưa rõ thời gian';
+            }
+            
+            return (
+            <a href={`/sharing/${share.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[320px] flex flex-col">
+              <!-- 标题和分类标签 -->
+              <div class="mb-4 flex-shrink-0">
+                <h3 class="text-white font-semibold text-base group-hover:text-blue-400 transition-colors line-clamp-2 mb-3">
+                  {share.title || 'Chia sẻ phẫu thuật'}
+                </h3>
+                <span class="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">
+                  {share.surgery_type || 'Chia sẻ chung'}
+                </span>
+              </div>
+              
+              <!-- 内容 - 填满空间 -->
+              <div class="mb-4 flex-grow overflow-hidden">
+                <p class="text-white/80 text-sm leading-relaxed line-clamp-[10]">
+                  {share.content || 'Chia sẻ trải nghiệm phẫu thuật thẩm mỹ...'}
+                </p>
+              </div>
+              
+              <!-- 底部信息栏 -->
+              <div class="pt-4 border-t border-white/10 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                  <!-- 左侧：统计数据 -->
+                  <div class="flex items-center space-x-3 text-xs">
+                    <span class="flex items-center text-white/60">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                      </svg>
+                      {randomLikes}
+                    </span>
+                    <span class="flex items-center text-white/60">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                      {randomViews}
+                    </span>
+                  </div>
+                  
+                  <!-- 中间：上传时间 -->
+                  <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-white/60 text-xs">{uploadDateTime}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <script>
+    // 获取当前页面ID
+    const currentId = window.location.pathname.split('/').pop();
+    
+    // 点赞功能
+    async function handleLike() {
+      try {
+        const response = await fetch(`/api/user-shares/${currentId}/like`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            // 更新点赞数显示
+            const likeCountElement = document.getElementById('like-count');
+            if (likeCountElement) {
+              likeCountElement.textContent = data.data.like_count;
+            }
+            
+            // 显示成功提示
+            showToast('Đã thích bài viết!', 'success');
+          }
+        } else {
+          showToast('Có lỗi xảy ra khi thích bài viết', 'error');
+        }
+      } catch (error) {
+        console.error('点赞失败:', error);
+        showToast('Có lỗi xảy ra khi thích bài viết', 'error');
+      }
+    }
+    
+    // 分享功能 - 复制链接
+    async function handleShare() {
+      try {
+        const url = window.location.href;
+        
+        // 尝试使用现代API复制到剪贴板
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(url);
+          showToast('Đã sao chép liên kết vào clipboard!', 'success');
+        } else {
+          // 降级方案：使用传统方法
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          
+          try {
+            document.execCommand('copy');
+            showToast('Đã sao chép liên kết vào clipboard!', 'success');
+          } catch (err) {
+            // 如果复制失败，显示链接让用户手动复制
+            showShareModal(url);
+          }
+          
+          document.body.removeChild(textArea);
+        }
+      } catch (error) {
+        console.error('分享失败:', error);
+        // 如果所有方法都失败，显示模态框让用户手动复制
+        showShareModal(window.location.href);
+      }
+    }
+    
+    // 显示分享模态框
+    function showShareModal(url) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+          <h3 class="text-lg font-bold mb-4">Chia sẻ liên kết</h3>
+          <p class="text-gray-600 mb-4">Sao chép liên kết bên dưới để chia sẻ:</p>
+          <div class="flex">
+            <input type="text" value="${url}" readonly class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="copyToClipboard('${url}')" class="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Sao chép
+            </button>
+          </div>
+          <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none">
+            Đóng
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // 添加全局函数
+      window.copyToClipboard = function(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Đã sao chép!', 'success');
+      };
+      
+      window.closeModal = function() {
+        document.body.removeChild(modal);
+      };
+    }
+    
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 
+        'bg-blue-500'
+      }`;
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      // 3秒后自动移除
+      setTimeout(() => {
+        if (document.body.contains(toast)) {
+          document.body.removeChild(toast);
+        }
+      }, 3000);
+    }
+  </script>
+</Layout>

@@ -1,0 +1,342 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+import { hospitalAPI } from '../utils/api.js';
+
+// Lấy tham số URL
+const url = new URL(Astro.request.url);
+const page = parseInt(url.searchParams.get('page')) || 1;
+const city = url.searchParams.get('city') || '';
+const limit = 36; // Mỗi trang 36 khối media
+const offset = (page - 1) * limit;
+
+// Lấy dữ liệu bệnh viện
+let hospitals = [];
+let totalCount = 0;
+let totalPages = 0;
+
+try {
+  const params = { 
+    page: page,
+    limit: limit, 
+    status: 'active'
+  };
+  
+  // Nếu có lọc theo thành phố
+  if (city) {
+    params.city = city;
+  }
+  
+  const response = await hospitalAPI.getList(params);
+  hospitals = response.data || [];
+  totalCount = response.pagination?.total || 0;
+  totalPages = response.pagination?.pages || 0;
+  
+  console.log(`✅ 从API获取到 ${hospitals.length} 家医院数据 (城市: ${city || '全部'})`);
+} catch (error) {
+  console.error('Lấy dữ liệu bệnh viện thất bại:', error);
+  // Sử dụng dữ liệu mặc định làm dự phòng
+  hospitals = [
+    {
+      id: 1,
+      name: 'Bệnh viện Da liễu TP.HCM',
+      description: 'Bệnh viện chuyên khoa da liễu tuyến thành phố, có Khoa Thẩm mỹ Da cung cấp dịch vụ tiêm botox, filler, chăm sóc – trẻ hóa da theo quy chuẩn y tế. Đơn vị y tế công lập uy tín với đội ngũ bác sĩ chuyên môn cao và thiết bị hiện đại.',
+      address: 'Số 2 Nguyễn Thông, Phường 6, Quận 3, TP.HCM',
+      city: 'TP.HCM',
+      district: 'Quận 3',
+      rating: 4.7,
+      review_count: 856,
+      specialties: ['Thẩm mỹ khuôn mặt', 'Chăm sóc da', 'Tiêm Botox & Filler', 'Trẻ hóa da'],
+      level: 'A',
+      type: 'public',
+      phone: '+84 28 3930 2222',
+      email: 'bvdl@hcm.gov.vn',
+      website: 'https://bvdl.org.vn/',
+      established_year: 1975,
+      doctors_count: 120,
+      beds_count: 200,
+      created_at: new Date('2024-03-01')
+    },
+    {
+      id: 2,
+      name: 'Khoa Tạo hình Thẩm mỹ – Bệnh viện Đại học Y Dược TP.HCM',
+      description: 'Đơn vị tạo hình – thẩm mỹ thuộc bệnh viện đại học, đội ngũ bác sĩ giảng dạy/ngoại khoa chuyên sâu. Cung cấp vi thủ thuật thẩm mỹ khuôn mặt (botox, filler…) và phẫu thuật thẩm mỹ với chuẩn mực y khoa cao, kết hợp đào tạo và nghiên cứu.',
+      address: '215 Hồng Bàng, Phường 11, Quận 5, TP.HCM',
+      city: 'TP.HCM',
+      district: 'Quận 5',
+      rating: 4.8,
+      review_count: 1024,
+      specialties: ['Thẩm mỹ khuôn mặt', 'Phẫu thuật tạo hình', 'Tiêm Botox & Filler', 'Vi thủ thuật'],
+      level: 'A+',
+      type: 'public',
+      phone: '+84 28 3855 4269',
+      email: 'taohinhthammyyd@ump.edu.vn',
+      website: 'https://taohinhthammyyd.com/',
+      established_year: 1947,
+      doctors_count: 85,
+      beds_count: 150,
+      created_at: new Date('2024-03-02')
+    },
+    {
+      id: 3,
+      name: 'Bệnh viện Đa khoa Tâm Anh TP.HCM',
+      description: 'Khoa Da liễu – Thẩm mỹ Da cung cấp điều trị da và thẩm mỹ nội khoa (laser, botox, filler), quy trình chuẩn bệnh viện tư nhân lớn. Hệ thống bệnh viện hiện đại với công nghệ tiên tiến và dịch vụ 5 sao, đội ngũ bác sĩ giàu kinh nghiệm.',
+      address: '2B Phổ Quang, Phường 2, Quận Tân Bình, TP.HCM',
+      city: 'TP.HCM',
+      district: 'Quận Tân Bình',
+      rating: 4.9,
+      review_count: 1567,
+      specialties: ['Thẩm mỹ khuôn mặt', 'Laser điều trị da', 'Tiêm Botox & Filler', 'Chăm sóc da cao cấp'],
+      level: 'A+',
+      type: 'private',
+      phone: '+84 28 7102 6789',
+      email: 'cskh@bvtamanh.com',
+      website: 'https://tamanhhospital.vn/chuyen-khoa/da-lieu/',
+      established_year: 2018,
+      doctors_count: 95,
+      beds_count: 250,
+      created_at: new Date('2024-03-03')
+    },
+    {
+      id: 4,
+      name: 'FV Hospital – Dermatology & Lifestyle',
+      description: 'Bệnh viện quốc tế tại Quận 7; Lifestyle/Laser & Skin Clinic thực hiện trẻ hóa da, botox, filler, thread-lift và các thủ thuật da liễu – thẩm mỹ. Tiêu chuẩn quốc tế JCI, đội ngũ bác sĩ nước ngoài và Việt Nam giàu kinh nghiệm, thiết bị hiện đại nhất.',
+      address: '6 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7, TP.HCM',
+      city: 'TP.HCM',
+      district: 'Quận 7',
+      rating: 4.9,
+      review_count: 2134,
+      specialties: ['Thẩm mỹ khuôn mặt', 'Trẻ hóa da', 'Thread-lift', 'Laser & Skin'],
+      level: 'A+',
+      type: 'international',
+      phone: '+84 28 5411 3333',
+      email: 'info@fvhospital.com',
+      website: 'https://www.fvhospital.com/',
+      established_year: 2003,
+      doctors_count: 150,
+      beds_count: 250,
+      created_at: new Date('2024-03-04')
+    },
+    {
+      id: 5,
+      name: 'VITA Clinic',
+      description: 'Hệ thống thẩm mỹ – chăm sóc sức khỏe có nhiều chi nhánh tại HCMC (Saigon Centre, Pearl Plaza, Thảo Điền…); cung cấp trẻ hóa da, botox, filler và liệu trình chăm sóc da. Thương hiệu thẩm mỹ cao cấp với không gian sang trọng và dịch vụ tận tâm.',
+      address: 'Tầng 6, Saigon Centre, 65 Lê Lợi, Phường Bến Nghé, Quận 1, TP.HCM',
+      city: 'TP.HCM',
+      district: 'Quận 1',
+      rating: 4.8,
+      review_count: 1876,
+      specialties: ['Thẩm mỹ khuôn mặt', 'Trẻ hóa da', 'Tiêm Botox & Filler', 'Chăm sóc da'],
+      level: 'A',
+      type: 'private',
+      phone: '+84 28 3822 2299',
+      email: 'info@vitaclinic.vn',
+      website: 'https://vitaclinic.vn/',
+      established_year: 2012,
+      doctors_count: 45,
+      beds_count: 30,
+      created_at: new Date('2024-03-05')
+    }
+  ];
+  totalCount = hospitals.length;
+  totalPages = 1;
+}
+
+// Tạo rating stars
+function generateStars(rating) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  
+  let stars = '';
+  for (let i = 0; i < fullStars; i++) {
+    stars += '★';
+  }
+  if (hasHalfStar) {
+    stars += '☆';
+  }
+  for (let i = 0; i < emptyStars; i++) {
+    stars += '☆';
+  }
+  return stars;
+}
+---
+
+<Layout 
+  title="122+ Bệnh viện thẩm mỹ uy tín Việt Nam - Đánh giá chi tiết, xếp hạng 2025"
+  description="Danh sách 122 bệnh viện phẫu thuật thẩm mỹ uy tín tại TP.HCM, Hà Nội, Đà Nẵng, Hải Phòng, Cần Thơ. Đánh giá chi tiết về giá cả, chất lượng, bác sĩ, trang thiết bị, dịch vụ, chứng nhận. Xếp hạng từ 4.0-4.8 sao. Tìm bệnh viện phù hợp ngay"
+  keywords="bệnh viện thẩm mỹ uy tín Việt Nam, danh sách 122 bệnh viện, bệnh viện phẫu thuật TP.HCM, bệnh viện thẩm mỹ Hà Nội, thẩm mỹ viện Đà Nẵng, bệnh viện Hải Phòng, phòng khám Cần Thơ, đánh giá bệnh viện chi tiết, xếp hạng bệnh viện thẩm mỹ 2025, bệnh viện nâng mũi tốt nhất, bệnh viện cắt mí uy tín, bệnh viện gọt mặt chuyên nghiệp, bệnh viện nâng ngực an toàn, bệnh viện hút mỡ hiệu quả, phòng khám làm đẹp da, bệnh viện quốc tế, bệnh viện Hàn Quốc, bệnh viện tư nhân, bệnh viện công lập, chi phí bệnh viện, bảng giá phẫu thuật, địa chỉ bệnh viện thẩm mỹ, số điện thoại bệnh viện, bệnh viện hạng A, bệnh viện hạng B, chứng nhận y tế, giấy phép hoạt động, bác sĩ giỏi, đội ngũ chuyên nghiệp, trang thiết bị hiện đại, dịch vụ tốt, đánh giá 5 sao, review bệnh viện, so sánh bệnh viện, bệnh viện nào tốt, bệnh viện uy tín nhất, top bệnh viện thẩm mỹ, bệnh viện chất lượng cao, bệnh viện an toàn, chọn bệnh viện như thế nào, kinh nghiệm chọn bệnh viện, tư vấn chọn bệnh viện"
+>
+  <!-- Đầu trang -->
+  <section class="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto text-center">
+      <h1 class="text-5xl font-bold gradient-text-green mb-6">Giới thiệu bệnh viện</h1>
+      <p class="text-white/70 text-xl max-w-3xl mx-auto">
+        Đánh giá người dùng thực tế, giúp bạn chọn cơ sở phẫu thuật thẩm mỹ phù hợp nhất
+      </p>
+    </div>
+  </section>
+
+  <!-- Lọc bệnh viện -->
+  <section class="pb-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="glass rounded-2xl p-6">
+        <div class="flex flex-wrap gap-4 justify-center">
+          <a 
+            href="/reviews" 
+            class={`px-6 py-3 rounded-xl border transition-all ${!city ? 'bg-green-500/20 text-green-400 border-green-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Tất cả bệnh viện
+          </a>
+          <a 
+            href="/reviews?city=TP.HCM" 
+            class={`px-6 py-3 rounded-xl border transition-all ${city === 'TP.HCM' ? 'bg-green-500/20 text-green-400 border-green-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            TP.HCM
+          </a>
+          <a 
+            href="/reviews?city=Hà Nội" 
+            class={`px-6 py-3 rounded-xl border transition-all ${city === 'Hà Nội' ? 'bg-green-500/20 text-green-400 border-green-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Hà Nội
+          </a>
+          <a 
+            href="/reviews?city=Hải Phòng" 
+            class={`px-6 py-3 rounded-xl border transition-all ${city === 'Hải Phòng' ? 'bg-green-500/20 text-green-400 border-green-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Hải Phòng
+          </a>
+          <a 
+            href="/reviews?city=Đà Nẵng" 
+            class={`px-6 py-3 rounded-xl border transition-all ${city === 'Đà Nẵng' ? 'bg-green-500/20 text-green-400 border-green-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Đà Nẵng
+          </a>
+          <a 
+            href="/reviews?city=Cần Thơ" 
+            class={`px-6 py-3 rounded-xl border transition-all ${city === 'Cần Thơ' ? 'bg-green-500/20 text-green-400 border-green-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Cần Thơ
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nội dung bệnh viện -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- Lưới khối media - bố cục 3 cột -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {hospitals.map((hospital) => {
+          // 生成随机浏览数 1000-3000
+          const viewCount = Math.floor(Math.random() * 2001) + 1000;
+          
+          return (
+          <a href={`/reviews/${hospital.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[340px] flex flex-col">
+            
+            <!-- Tiêu đề bệnh viện - 固定高度 -->
+            <div class="mb-4 flex-shrink-0">
+              <h3 class="text-white font-semibold text-base group-hover:text-green-400 transition-colors line-clamp-2 mb-2 h-12">
+                {hospital.name || 'Bệnh viện thẩm mỹ'}
+              </h3>
+              <p class="text-white/60 text-xs mb-2">{hospital.district}, {hospital.city}</p>
+              
+              <!-- Chuyên khoa tags -->
+              <div class="flex flex-wrap gap-1">
+                {hospital.specialties && hospital.specialties.slice(0, 2).map((specialty) => (
+                  <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded border border-blue-400/30">
+                    {specialty}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Nội dung mô tả - 完整展示，不截断，字体增加2号 -->
+            <div class="mb-3 flex-grow overflow-y-auto">
+              <p class="text-white/80 text-sm leading-tight">
+                {hospital.description || 'Bệnh viện thẩm mỹ chuyên nghiệp với đội ngũ bác sĩ giàu kinh nghiệm và thiết bị hiện đại...'}
+              </p>
+            </div>
+
+            <!-- Thông tin đánh giá和浏览数 - 固定高度，单行显示 -->
+            <div class="pt-4 border-t border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between">
+                <!-- 左侧：浏览数 -->
+                <div class="flex items-center text-xs">
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {viewCount.toLocaleString()}
+                  </span>
+                </div>
+
+                <!-- 中间：星星和评分 -->
+                <div class="flex items-center space-x-2">
+                  <div class="flex items-center text-yellow-400 text-sm">
+                    {generateStars(hospital.rating)}
+                  </div>
+                  <span class="text-white font-semibold text-sm">{hospital.rating}</span>
+                </div>
+
+                <!-- 右侧：详情链接 -->
+                <span class="text-green-400 group-hover:text-green-300 transition-colors text-xs">
+                  Chi tiết →
+                </span>
+              </div>
+            </div>
+          </a>
+        )})}
+      </div>
+
+          </div>
+
+      <!-- Điều hướng phân trang -->
+      {totalPages > 1 && (
+        <div class="flex justify-center items-center mt-12 space-x-2">
+          <!-- Trang trước -->
+          {page > 1 && (
+            <a href={`/reviews?page=${page - 1}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
+              Trang trước
+            </a>
+          )}
+          
+          <!-- Số trang -->
+          {page > 3 && totalPages > 5 && (
+            <a href="/reviews?page=1" class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">1</a>
+          )}
+          {page > 4 && totalPages > 5 && (
+            <span class="px-2 text-white/50">...</span>
+          )}
+          
+          {page > 2 && (
+            <a href={`/reviews?page=${page - 1}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page - 1}</a>
+          )}
+          
+          <a href={`/reviews?page=${page}`} class="px-4 py-2 bg-green-500 text-white rounded-lg">{page}</a>
+          
+          {page < totalPages - 1 && (
+            <a href={`/reviews?page=${page + 1}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page + 1}</a>
+          )}
+          
+          {page < totalPages - 3 && totalPages > 5 && (
+            <span class="px-2 text-white/50">...</span>
+          )}
+          {page < totalPages - 2 && totalPages > 5 && (
+            <a href={`/reviews?page=${totalPages}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{totalPages}</a>
+          )}
+          
+          <!-- Trang sau -->
+          {page < totalPages && (
+            <a href={`/reviews?page=${page + 1}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
+              Trang sau
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,491 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+
+// 定义6个核心服务内容
+const services = [
+  {
+    id: 1,
+    title: 'Đánh giá rủi ro & tư vấn gói làm đẹp',
+    shortTitle: 'Tư vấn gói làm đẹp',
+    description: 'Giúp người dùng hiểu rõ chi phí, đối tượng phù hợp, rủi ro và thời gian hồi phục của từng phương pháp, để biết mình có nên làm và chọn hướng phù hợp nhất.',
+    icon: '✅',
+    iconGradient: 'from-blue-500 to-cyan-500',
+    color: 'from-blue-400 to-purple-400',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-400/30',
+    features: [
+      'Đánh giá điều kiện sức khỏe cá nhân',
+      'Phân tích rủi ro và tỷ lệ thành công',
+      'So sánh các phương pháp phù hợp',
+      'Ước tính chi phí chi tiết',
+      'Tư vấn thời gian hồi phục',
+      'Đề xuất gói làm đẹp tổng hợp'
+    ],
+    highlights: [
+      { label: 'Độ chính xác', value: '95%' },
+      { label: 'Thời gian tư vấn', value: '30-45 phút' },
+      { label: 'Miễn phí', value: 'Có' }
+    ]
+  },
+  {
+    id: 2,
+    title: 'Tư vấn & giải đáp thắc mắc thẩm mỹ',
+    shortTitle: 'Giải đáp thắc mắc',
+    description: 'Giúp người dùng nhanh chóng tìm được câu trả lời cho các thắc mắc thường gặp: chuẩn bị trước khi làm, chăm sóc sau thủ thuật, sự khác biệt về giá và thời gian hiệu quả.',
+    icon: '💬',
+    iconGradient: 'from-green-500 to-emerald-500',
+    color: 'from-green-400 to-teal-400',
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-400/30',
+    features: [
+      'Hướng dẫn chuẩn bị trước phẫu thuật',
+      'Giải đáp thắc mắc về quy trình',
+      'Tư vấn chăm sóc sau thủ thuật',
+      'So sánh giá và thời gian hiệu quả',
+      'Chia sẻ kinh nghiệm thực tế',
+      'Hỗ trợ tư vấn 24/7'
+    ],
+    highlights: [
+      { label: 'Thời gian phản hồi', value: '< 2 giờ' },
+      { label: 'Chuyên gia', value: '50+ bác sĩ' },
+      { label: 'Hoạt động', value: '24/7' }
+    ]
+  },
+  {
+    id: 3,
+    title: 'Hỗ trợ đặt lịch bệnh viện',
+    shortTitle: 'Đặt lịch khám',
+    description: 'Giúp người dùng tìm bệnh viện uy tín phù hợp với ngân sách và thành phố của mình, đồng thời hướng dẫn các bước chuẩn bị trước khi đến khám.',
+    icon: '📅',
+    iconGradient: 'from-pink-500 to-rose-500',
+    color: 'from-pink-400 to-rose-400',
+    bgColor: 'bg-pink-500/10',
+    borderColor: 'border-pink-400/30',
+    features: [
+      'Tìm bệnh viện theo thành phố',
+      'Lọc theo ngân sách và chuyên khoa',
+      'So sánh bệnh viện và bác sĩ',
+      'Hỗ trợ đặt lịch hẹn nhanh',
+      'Hướng dẫn chuẩn bị hồ sơ',
+      'Nhắc lịch khám tự động'
+    ],
+    highlights: [
+      { label: 'Bệnh viện', value: '120+ đối tác' },
+      { label: 'Đặt lịch', value: 'Miễn phí' },
+      { label: 'Xác nhận', value: 'Tức thì' }
+    ]
+  },
+  {
+    id: 4,
+    title: 'Kiểm tra & xác minh thông tin bệnh viện',
+    shortTitle: 'Xác minh bệnh viện',
+    description: 'Giúp người dùng xác minh giấy phép, thiết bị, điều kiện vệ sinh và đánh giá uy tín của bệnh viện, để an tâm hơn trước khi lựa chọn.',
+    icon: '🔍',
+    iconGradient: 'from-orange-500 to-amber-500',
+    color: 'from-orange-400 to-amber-400',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-400/30',
+    features: [
+      'Kiểm tra giấy phép hoạt động',
+      'Xác minh chứng chỉ bác sĩ',
+      'Đánh giá thiết bị và cơ sở vật chất',
+      'Kiểm tra điều kiện vệ sinh',
+      'Xem đánh giá người dùng thực tế',
+      'Cảnh báo bệnh viện có vấn đề'
+    ],
+    highlights: [
+      { label: 'Cơ sở dữ liệu', value: '5000+ hồ sơ' },
+      { label: 'Cập nhật', value: 'Hàng tuần' },
+      { label: 'Độ tin cậy', value: '98%' }
+    ]
+  },
+  {
+    id: 5,
+    title: 'Tư vấn trả góp chi phí y tế',
+    shortTitle: 'Tư vấn trả góp',
+    description: 'Giúp người dùng hiểu rõ các gói trả góp từ ngân hàng hoặc tổ chức tài chính, nắm rõ lãi suất, phí dịch vụ và kế hoạch thanh toán, chi tiêu minh bạch và chủ động.',
+    icon: '💳',
+    iconGradient: 'from-cyan-500 to-blue-500',
+    color: 'from-cyan-400 to-blue-400',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-400/30',
+    features: [
+      'So sánh gói trả góp từ các ngân hàng',
+      'Tính toán lãi suất và phí dịch vụ',
+      'Lập kế hoạch thanh toán rõ ràng',
+      'Hướng dẫn thủ tục vay vốn',
+      'Tư vấn điều kiện vay',
+      'Hỗ trợ làm hồ sơ tài chính'
+    ],
+    highlights: [
+      { label: 'Đối tác ngân hàng', value: '15+' },
+      { label: 'Lãi suất', value: 'Từ 0%' },
+      { label: 'Phê duyệt', value: '24 giờ' }
+    ]
+  },
+  {
+    id: 6,
+    title: 'Hỗ trợ khiếu nại & bảo vệ quyền lợi',
+    shortTitle: 'Bảo vệ quyền lợi',
+    description: 'Giúp người dùng khi gặp vấn đề về dịch vụ hoặc kết quả thẩm mỹ, chuẩn bị hồ sơ, thu thập bằng chứng và hướng dẫn nộp đơn đến cơ quan chức năng hoặc trung tâm hòa giải.',
+    icon: '⚖️',
+    iconGradient: 'from-red-500 to-pink-500',
+    color: 'from-red-400 to-pink-400',
+    bgColor: 'bg-red-500/10',
+    borderColor: 'border-red-400/30',
+    features: [
+      'Tư vấn quyền lợi người tiêu dùng',
+      'Hướng dẫn chuẩn bị hồ sơ khiếu nại',
+      'Thu thập và bảo quản bằng chứng',
+      'Hỗ trợ nộp đơn khiếu nại',
+      'Kết nối luật sư chuyên ngành',
+      'Theo dõi tiến trình giải quyết'
+    ],
+    highlights: [
+      { label: 'Tỷ lệ thành công', value: '87%' },
+      { label: 'Luật sư', value: '20+ chuyên gia' },
+      { label: 'Tư vấn pháp lý', value: 'Miễn phí' }
+    ]
+  }
+];
+---
+
+<Layout 
+  title="Dịch vụ phẫu thuật thẩm mỹ toàn diện - Tư vấn miễn phí 24/7"
+  description="Dịch vụ phẫu thuật thẩm mỹ toàn diện: Đánh giá rủi ro, tư vấn gói làm đẹp, hỗ trợ đặt lịch 120+ bệnh viện, xác minh thông tin, tư vấn trả góp, bảo vệ quyền lợi. Hotline miễn phí 24/7: +84 921000789"
+  keywords="dịch vụ phẫu thuật thẩm mỹ, tư vấn miễn phí, đánh giá rủi ro phẫu thuật, gói làm đẹp, đặt lịch bệnh viện, xác minh bệnh viện uy tín, trả góp phẫu thuật, bảo vệ quyền lợi khách hàng, tư vấn 24/7, hỗ trợ khách hàng, dịch vụ một cửa, so sánh bệnh viện, tư vấn chi phí, đánh giá bác sĩ, kiểm tra giấy phép"
+>
+  <!-- Đầu trang -->
+  <section class="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto text-center">
+      <div class="inline-block mb-4">
+        <span class="px-4 py-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 rounded-full text-blue-400 text-sm font-semibold">
+          Dịch vụ toàn diện
+        </span>
+      </div>
+      <h1 class="text-5xl md:text-6xl font-bold mb-6">
+        <span class="gradient-text-blue">Nội dung dịch vụ</span>
+      </h1>
+      <p class="text-white/70 text-xl max-w-3xl mx-auto leading-relaxed">
+        Cung cấp giải pháp toàn diện từ tư vấn, đặt lịch đến hỗ trợ pháp lý,<br>
+        đồng hành cùng bạn trong hành trình làm đẹp an toàn và hiệu quả
+      </p>
+    </div>
+  </section>
+
+  <!-- Thống kê nhanh -->
+  <section class="pb-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="glass rounded-2xl p-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="text-center">
+            <div class="text-4xl font-bold gradient-text-blue mb-2">120+</div>
+            <div class="text-white/60 text-sm">Bệnh viện đối tác</div>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl font-bold gradient-text-blue mb-2">50+</div>
+            <div class="text-white/60 text-sm">Chuyên gia tư vấn</div>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl font-bold gradient-text-blue mb-2">24/7</div>
+            <div class="text-white/60 text-sm">Hỗ trợ trực tuyến</div>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl font-bold gradient-text-blue mb-2">5000+</div>
+            <div class="text-white/60 text-sm">Khách hàng tin tưởng</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hiển thị 6 dịch vụ chính -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {services.map((service) => (
+          <div class="media-card group flex flex-col h-full">
+            <!-- Header với icon và gradient -->
+            <div class="relative overflow-hidden rounded-xl mb-6 p-8 bg-gradient-to-br {service.color} flex-shrink-0">
+              <div class="text-center">
+                <div class="text-6xl mb-4 transform group-hover:scale-110 transition-transform">
+                  {service.icon}
+                </div>
+                <h3 class="text-white font-bold text-xl">
+                  {service.shortTitle}
+                </h3>
+              </div>
+              <!-- Decorative elements -->
+              <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+              <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+            </div>
+            
+            <!-- 标题和描述 -->
+            <div class="flex flex-col flex-grow">
+              <!-- 固定高度的标题区域 -->
+              <div class="flex-shrink-0 mb-4">
+                <h3 class="text-white font-bold text-xl leading-tight h-14 flex items-center">
+                  {service.title}
+                </h3>
+                <p class="text-white/70 text-sm leading-relaxed h-20">
+                  {service.description}
+                </p>
+              </div>
+              
+              <!-- 功能列表 - 固定高度 -->
+              <div class="flex-shrink-0 mb-4">
+                <div class="text-white/90 text-sm font-semibold mb-3">
+                  ✨ Tính năng chính:
+                </div>
+                <div class="space-y-2.5">
+                  {service.features.map((feature) => (
+                    <div class="flex items-start gap-2">
+                      <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                      <span class="text-white/80 text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <!-- 底部固定区域 -->
+              <div class="mt-auto flex-shrink-0">
+                <!-- 高亮信息 -->
+                <div class="grid grid-cols-3 gap-3 pt-4 pb-4 border-t border-white/10">
+                  {service.highlights.map((highlight) => (
+                    <div class="text-center">
+                      <div class="text-white font-bold text-sm mb-1">
+                        {highlight.value}
+                      </div>
+                      <div class="text-white/50 text-xs">
+                        {highlight.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div>
+                  <button class="w-full py-3 bg-gradient-to-r {service.color} text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all">
+                    Tìm hiểu thêm →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Quy trình làm việc -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold gradient-text-blue mb-4">
+          Quy trình làm việc
+        </h2>
+        <p class="text-white/70 text-lg">
+          4 bước đơn giản để trải nghiệm dịch vụ của chúng tôi
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Bước 1 -->
+        <div class="glass rounded-2xl p-6 text-center relative">
+          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            1
+          </div>
+          <div class="text-4xl mb-4 mt-2">📝</div>
+          <h3 class="text-white font-bold mb-2">Đăng ký tư vấn</h3>
+          <p class="text-white/60 text-sm">
+            Điền thông tin và nhu cầu của bạn
+          </p>
+        </div>
+        
+        <!-- Bước 2 -->
+        <div class="glass rounded-2xl p-6 text-center relative">
+          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            2
+          </div>
+          <div class="text-4xl mb-4 mt-2">💬</div>
+          <h3 class="text-white font-bold mb-2">Tư vấn chuyên sâu</h3>
+          <p class="text-white/60 text-sm">
+            Chuyên gia phân tích và đề xuất giải pháp
+          </p>
+        </div>
+        
+        <!-- Bước 3 -->
+        <div class="glass rounded-2xl p-6 text-center relative">
+          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            3
+          </div>
+          <div class="text-4xl mb-4 mt-2">📅</div>
+          <h3 class="text-white font-bold mb-2">Đặt lịch hẹn</h3>
+          <p class="text-white/60 text-sm">
+            Chọn thời gian và địa điểm phù hợp
+          </p>
+        </div>
+        
+        <!-- Bước 4 -->
+        <div class="glass rounded-2xl p-6 text-center relative">
+          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            4
+          </div>
+          <div class="text-4xl mb-4 mt-2">✅</div>
+          <h3 class="text-white font-bold mb-2">Hỗ trợ liên tục</h3>
+          <p class="text-white/60 text-sm">
+            Theo dõi và hỗ trợ trong suốt quá trình
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ưu điểm dịch vụ -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="glass rounded-2xl p-8 md:p-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-12 text-center">
+          <span class="gradient-text-blue">Tại sao chọn chúng tôi?</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div class="text-center">
+            <div class="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-400 rounded-2xl flex items-center justify-center text-white text-3xl mx-auto mb-4 shadow-lg">
+              👨‍⚕️
+            </div>
+            <h3 class="text-white font-semibold mb-2 text-lg">Đội ngũ chuyên nghiệp</h3>
+            <p class="text-white/70 text-sm leading-relaxed">
+              50+ chuyên gia tư vấn có chứng chỉ quốc tế và kinh nghiệm thực tế
+            </p>
+          </div>
+          
+          <div class="text-center">
+            <div class="w-20 h-20 bg-gradient-to-r from-green-400 to-teal-400 rounded-2xl flex items-center justify-center text-white text-3xl mx-auto mb-4 shadow-lg">
+              🏥
+            </div>
+            <h3 class="text-white font-semibold mb-2 text-lg">Mạng lưới rộng khắp</h3>
+            <p class="text-white/70 text-sm leading-relaxed">
+              Hợp tác với 120+ bệnh viện uy tín trên toàn quốc
+            </p>
+          </div>
+          
+          <div class="text-center">
+            <div class="w-20 h-20 bg-gradient-to-r from-orange-400 to-red-400 rounded-2xl flex items-center justify-center text-white text-3xl mx-auto mb-4 shadow-lg">
+              🛡️
+            </div>
+            <h3 class="text-white font-semibold mb-2 text-lg">Bảo mật thông tin</h3>
+            <p class="text-white/70 text-sm leading-relaxed">
+              Cam kết bảo vệ thông tin cá nhân theo tiêu chuẩn quốc tế
+            </p>
+          </div>
+          
+          <div class="text-center">
+            <div class="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl flex items-center justify-center text-white text-3xl mx-auto mb-4 shadow-lg">
+              💝
+            </div>
+            <h3 class="text-white font-semibold mb-2 text-lg">Miễn phí tư vấn</h3>
+            <p class="text-white/70 text-sm leading-relaxed">
+              Tất cả dịch vụ tư vấn và hỗ trợ hoàn toàn miễn phí
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Đánh giá khách hàng -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold gradient-text-blue mb-4">
+          Khách hàng nói gì về chúng tôi
+        </h2>
+        <p class="text-white/70 text-lg">
+          Hơn 5000 khách hàng đã tin tưởng và sử dụng dịch vụ
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold mr-3">
+              CH
+            </div>
+            <div>
+              <div class="text-white font-semibold">Chị Hương</div>
+              <div class="text-yellow-400 text-sm">★★★★★</div>
+            </div>
+          </div>
+          <p class="text-white/70 text-sm leading-relaxed">
+            "Dịch vụ tư vấn rất chuyên nghiệp, giúp tôi hiểu rõ các rủi ro và chi phí. Đặc biệt là hỗ trợ trả góp rất tiện lợi."
+          </p>
+        </div>
+        
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-gradient-to-r from-green-400 to-teal-400 rounded-full flex items-center justify-center text-white font-bold mr-3">
+              AL
+            </div>
+            <div>
+              <div class="text-white font-semibold">Anh Linh</div>
+              <div class="text-yellow-400 text-sm">★★★★★</div>
+            </div>
+          </div>
+          <p class="text-white/70 text-sm leading-relaxed">
+            "Hệ thống xác minh bệnh viện rất hữu ích, giúp tôi tìm được bệnh viện uy tín và đặt lịch nhanh chóng."
+          </p>
+        </div>
+        
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white font-bold mr-3">
+              CN
+            </div>
+            <div>
+              <div class="text-white font-semibold">Chị Ngọc</div>
+              <div class="text-yellow-400 text-sm">★★★★★</div>
+            </div>
+          </div>
+          <p class="text-white/70 text-sm leading-relaxed">
+            "Team hỗ trợ 24/7 rất nhiệt tình, giải đáp mọi thắc mắc của tôi. Cảm ơn các bạn rất nhiều!"
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Đặt lịch tư vấn CTA -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="relative overflow-hidden rounded-3xl p-12 bg-gradient-to-r from-blue-500 to-purple-600">
+        <div class="relative z-10 text-center">
+          <h2 class="text-4xl font-bold text-white mb-4">
+            Sẵn sàng bắt đầu hành trình làm đẹp?
+          </h2>
+          <p class="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
+            Gọi điện tư vấn miễn phí ngay hôm nay và nhận ưu đãi đặc biệt dành cho khách hàng mới
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="tel:PHONE_NUMBER_HERE" class="px-10 py-5 bg-white text-blue-600 rounded-xl font-bold text-lg hover:shadow-xl hover:scale-105 transition-all inline-flex items-center justify-center gap-3">
+              <span class="text-2xl">📞</span>
+              <div class="text-left">
+                <div class="text-sm font-normal text-blue-500">Gọi ngay</div>
+                <div class="font-bold">PHONE_NUMBER_HERE</div>
+              </div>
+            </a>
+          </div>
+          <div class="mt-6 text-white/80 text-sm">
+            ⏰ Tư vấn miễn phí 24/7 - Luôn sẵn sàng hỗ trợ bạn
+          </div>
+        </div>
+        
+        <!-- Decorative elements -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
+      </div>
+    </div>
+  </section>
+</Layout>

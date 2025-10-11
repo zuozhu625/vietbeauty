@@ -1,0 +1,18 @@
+[Unit]
+Description=越南医疗整形项目后端服务
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/越南医疗整形项目/backend
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment=NODE_ENV=production
+Environment=PORT=5002
+
+[Install]
+WantedBy=multi-user.target

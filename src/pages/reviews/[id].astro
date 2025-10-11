@@ -1,0 +1,411 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import '../../styles/global.css';
+import { hospitalAPI } from '../../utils/api.js';
+
+// 获取医院ID参数
+const { id } = Astro.params;
+
+// 获取医院详情数据
+let hospital = null;
+let reviews = [];
+let relatedHospitals = [];
+
+try {
+  // 获取医院详情
+  const hospitalResponse = await hospitalAPI.getById(id);
+  hospital = hospitalResponse.data || hospitalResponse;
+  
+  // 获取相关医院
+  const relatedResponse = await hospitalAPI.getList({ 
+    limit: 4, 
+    status: 'active' 
+  });
+  relatedHospitals = (relatedResponse.data || []).filter(h => h.id != id).slice(0, 3);
+  
+  console.log('✅ 医院详情加载成功:', hospital.name);
+} catch (error) {
+  console.error('❌ 获取医院详情失败:', error);
+  // 使用默认数据作为后备
+  hospital = {
+    id: id,
+    name: 'Bệnh viện thẩm mỹ TP.HCM',
+    description: 'Bệnh viện thẩm mỹ hàng đầu tại TP.HCM với đội ngũ bác sĩ chuyên nghiệp và thiết bị hiện đại. Chúng tôi cam kết mang đến cho khách hàng trải nghiệm phẫu thuật thẩm mỹ an toàn và hiệu quả nhất.',
+    address: '123 Nguyễn Huệ, Quận 1, TP.HCM',
+    city: 'TP.HCM',
+    district: 'Quận 1',
+    rating: 4.8,
+    review_count: 1234,
+    specialties: ['Phẫu thuật mũi', 'Phẫu thuật mắt', 'Tạo hình cơ thể', 'Làm đẹp da'],
+    level: 'A',
+    type: 'private',
+    phone: '+84 28 1234 5678',
+    email: 'info@hospital.com',
+    website: 'https://hospital.com',
+    established_year: 2010,
+    doctors_count: 25,
+    beds_count: 50,
+    created_at: new Date('2024-03-01')
+  };
+  
+  reviews = [
+    {
+      id: 1,
+      user_name: 'Chị Lý',
+      surgery_type: 'Phẫu thuật mũi',
+      rating: 5,
+      content: 'Môi trường bệnh viện rất tốt, bác sĩ rất chuyên nghiệp, hiệu quả phẫu thuật vượt quá mong đợi. Đội ngũ chăm sóc cũng rất chu đáo, toàn bộ quá trình đều yên tâm. Khuyên nên thử!',
+      created_at: new Date('2024-03-12')
+    },
+    {
+      id: 2,
+      user_name: 'Anh Vương',
+      surgery_type: 'Phẫu thuật mắt hai mí',
+      rating: 4,
+      content: 'Kỹ thuật bác sĩ tốt, hiệu quả rất tự nhiên. Chỉ là thời gian đặt lịch hơi dài, cần sắp xếp trước. Tổng thể vẫn rất hài lòng.',
+      created_at: new Date('2024-03-10')
+    }
+  ];
+  
+  relatedHospitals = [
+    {
+      id: 2,
+      name: 'Trung tâm phẫu thuật thẩm mỹ quốc tế Hà Nội',
+      rating: 4.9,
+      review_count: 856,
+      city: 'Hà Nội'
+    },
+    {
+      id: 3,
+      name: 'Bệnh viện thẩm mỹ Hàn Quốc Đà Nẵng',
+      rating: 4.6,
+      review_count: 642,
+      city: 'Đà Nẵng'
+    }
+  ];
+}
+
+// 生成评分星星
+function generateStars(rating) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  
+  let stars = '';
+  for (let i = 0; i < fullStars; i++) {
+    stars += '★';
+  }
+  if (hasHalfStar) {
+    stars += '☆';
+  }
+  for (let i = 0; i < emptyStars; i++) {
+    stars += '☆';
+  }
+  return stars;
+}
+---
+
+<Layout title={`${hospital.name} - Phẫu thuật Thẩm mỹ Việt Nam`}>
+  <!-- 面包屑导航 -->
+  <section class="pt-4 pb-4 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <nav class="flex items-center space-x-2 text-sm text-white/60">
+        <a href="/" class="hover:text-white transition-colors">Trang chủ</a>
+        <span>/</span>
+        <a href="/reviews" class="hover:text-white transition-colors">Bệnh viện</a>
+        <span>/</span>
+        <span class="text-white">{hospital.name}</span>
+      </nav>
+    </div>
+  </section>
+
+  <!-- 医院基本信息 -->
+  <section class="pb-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="media-card">
+        <!-- 医院标题和评分 -->
+        <div class="mb-6">
+          <h1 class="text-white font-bold text-3xl sm:text-4xl leading-tight mb-3">{hospital.name}</h1>
+          <p class="text-white/60 text-base mb-4">{hospital.address}</p>
+          
+          <!-- 评分 -->
+          <div class="flex items-center gap-3 mb-4">
+            <div class="flex text-yellow-400 text-xl">
+              {generateStars(hospital.rating)}
+            </div>
+            <span class="text-white font-semibold text-xl">{hospital.rating}</span>
+            <span class="text-white/60 text-sm">({hospital.review_count.toLocaleString()} đánh giá)</span>
+          </div>
+
+          <!-- 标签 -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full">
+              Đề xuất
+            </span>
+            <span class="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+              {hospital.type === 'private' ? 'Tư nhân' : hospital.type === 'international' ? 'Quốc tế' : 'Công lập'}
+            </span>
+            {hospital.level && (
+              <span class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">
+                Cấp độ {hospital.level}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <!-- 联系信息 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 pb-6 border-b border-white/10">
+          <div class="flex items-center text-white/80 text-sm">
+            <svg class="w-5 h-5 mr-2 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+            </svg>
+            {hospital.phone}
+          </div>
+          <div class="flex items-center text-white/80 text-sm">
+            <svg class="w-5 h-5 mr-2 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            {hospital.email}
+          </div>
+          <div class="flex items-center text-white/80 text-sm">
+            <svg class="w-5 h-5 mr-2 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+            </svg>
+            <a href={hospital.website} target="_blank" class="hover:text-blue-400 transition-colors truncate">
+              {hospital.website}
+            </a>
+          </div>
+        </div>
+
+        <!-- 医院描述 -->
+        <div class="mb-6">
+          <h3 class="text-white font-semibold text-lg mb-3">Giới thiệu bệnh viện</h3>
+          <p class="text-white/80 leading-relaxed">{hospital.description}</p>
+        </div>
+
+        <!-- 专业领域 -->
+        <div class="mb-6">
+          <h3 class="text-white font-semibold text-lg mb-3">Chuyên môn</h3>
+          <div class="flex flex-wrap gap-2">
+            {hospital.specialties && hospital.specialties.map((specialty) => (
+              <span class="bg-white/10 text-white/80 text-sm px-3 py-1 rounded-lg border border-white/20">
+                {specialty}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <!-- 统计数据 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400">{hospital.doctors_count || 25}</div>
+            <div class="text-white/60 text-sm">Bác sĩ</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400">{hospital.beds_count || 50}</div>
+            <div class="text-white/60 text-sm">Giường bệnh</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400">{hospital.review_count.toLocaleString()}</div>
+            <div class="text-white/60 text-sm">Đánh giá</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400">{new Date().getFullYear() - hospital.established_year}</div>
+            <div class="text-white/60 text-sm">Năm kinh nghiệm</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 服务、设施、认证和评价统计信息 - 合并到一行 -->
+  <section class="pb-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- 服务项目 -->
+        {hospital.services && hospital.services.length > 0 && (
+          <div class="media-card">
+            <h3 class="text-white font-semibold text-base mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+              Dịch vụ
+            </h3>
+            <ul class="space-y-2">
+              {hospital.services.map((service) => (
+                <li class="flex items-start text-white/80 text-xs">
+                  <svg class="w-4 h-4 mr-1.5 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>{service}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <!-- 设施设备 -->
+        {hospital.facilities && hospital.facilities.length > 0 && (
+          <div class="media-card">
+            <h3 class="text-white font-semibold text-base mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              Cơ sở vật chất
+            </h3>
+            <ul class="space-y-2">
+              {hospital.facilities.map((facility) => (
+                <li class="flex items-start text-white/80 text-xs">
+                  <svg class="w-4 h-4 mr-1.5 text-purple-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>{facility}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <!-- 认证资质 -->
+        {hospital.certifications && hospital.certifications.length > 0 && (
+          <div class="media-card">
+            <h3 class="text-white font-semibold text-base mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+              </svg>
+              Chứng nhận
+            </h3>
+            <ul class="space-y-2">
+              {hospital.certifications.map((cert) => (
+                <li class="flex items-start text-white/80 text-xs">
+                  <svg class="w-4 h-4 mr-1.5 text-yellow-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>{cert}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <!-- 评价统计 -->
+        <div class="media-card">
+          <h3 class="text-white font-semibold text-base mb-4">Thống kê đánh giá</h3>
+          
+          <!-- 总体评分 -->
+          <div class="text-center mb-4">
+            <div class="text-3xl font-bold text-yellow-400 mb-2">{hospital.rating}</div>
+            <div class="flex justify-center text-yellow-400 text-lg mb-2">
+              {generateStars(hospital.rating)}
+            </div>
+            <div class="text-white/60 text-xs">{hospital.review_count.toLocaleString()} đánh giá</div>
+          </div>
+
+          <!-- 各维度评分 -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-white/80 text-xs">Chuyên môn</span>
+              <div class="flex items-center">
+                <div class="w-16 bg-white/10 rounded-full h-1.5 mr-1.5">
+                  <div class="bg-yellow-400 h-1.5 rounded-full" style="width: 96%"></div>
+                </div>
+                <span class="text-white/60 text-xs">4.8</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-white/80 text-xs">Dịch vụ</span>
+              <div class="flex items-center">
+                <div class="w-16 bg-white/10 rounded-full h-1.5 mr-1.5">
+                  <div class="bg-yellow-400 h-1.5 rounded-full" style="width: 94%"></div>
+                </div>
+                <span class="text-white/60 text-xs">4.7</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-white/80 text-xs">Môi trường</span>
+              <div class="flex items-center">
+                <div class="w-16 bg-white/10 rounded-full h-1.5 mr-1.5">
+                  <div class="bg-yellow-400 h-1.5 rounded-full" style="width: 92%"></div>
+                </div>
+                <span class="text-white/60 text-xs">4.6</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 相关医院推荐 -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <h2 class="text-white font-bold text-2xl mb-8">Bệnh viện tương tự</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {relatedHospitals.map((relatedHospital) => {
+          // 生成随机浏览数 1000-3000
+          const viewCount = Math.floor(Math.random() * 2001) + 1000;
+          
+          return (
+          <a href={`/reviews/${relatedHospital.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[340px] flex flex-col">
+            
+            <!-- Tiêu đề bệnh viện -->
+            <div class="mb-4 flex-shrink-0">
+              <h3 class="text-white font-semibold text-base group-hover:text-green-400 transition-colors line-clamp-2 mb-2 h-12">
+                {relatedHospital.name}
+              </h3>
+              <p class="text-white/60 text-xs mb-2">{relatedHospital.district || relatedHospital.city}, {relatedHospital.city}</p>
+              
+              <!-- Chuyên khoa tags -->
+              <div class="flex flex-wrap gap-1">
+                {relatedHospital.specialties && relatedHospital.specialties.slice(0, 2).map((specialty) => (
+                  <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded border border-blue-400/30">
+                    {specialty}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Nội dung mô tả -->
+            <div class="mb-3 flex-grow overflow-y-auto">
+              <p class="text-white/80 text-sm leading-tight">
+                {relatedHospital.description || 'Bệnh viện thẩm mỹ chuyên nghiệp với đội ngũ bác sĩ giàu kinh nghiệm...'}
+              </p>
+            </div>
+
+            <!-- Thông tin đánh giá和浏览数 -->
+            <div class="pt-4 border-t border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between">
+                <!-- 左侧：浏览数 -->
+                <div class="flex items-center text-xs">
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {viewCount.toLocaleString()}
+                  </span>
+                </div>
+
+                <!-- 中间：星星和评分 -->
+                <div class="flex items-center space-x-2">
+                  <div class="flex items-center text-yellow-400 text-sm">
+                    {generateStars(relatedHospital.rating)}
+                  </div>
+                  <span class="text-white font-semibold text-sm">{relatedHospital.rating}</span>
+                </div>
+
+                <!-- 右侧：详情链接 -->
+                <span class="text-green-400 group-hover:text-green-300 transition-colors text-xs">
+                  Chi tiết →
+                </span>
+              </div>
+            </div>
+          </a>
+        )})}
+      </div>
+    </div>
+  </section>
+</Layout>

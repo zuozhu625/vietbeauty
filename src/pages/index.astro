@@ -1,16 +1,509 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+import { userShareAPI, knowledgeAPI, hospitalAPI } from '../utils/api.js';
 
+// 获取用户分享数据（最新6条）
+let userShares = [];
+try {
+  const shareResponse = await userShareAPI.getList({ 
+    page: 1,
+    limit: 6, 
+    status: 'published',
+    sort: 'created_at',
+    order: 'DESC'
+  });
+  userShares = shareResponse.data || [];
+} catch (error) {
+  console.error('获取用户分享数据失败:', error);
+}
+
+// 获取知识问答数据（最新6条）
+let knowledgeItems = [];
+try {
+  const knowledgeResponse = await knowledgeAPI.getList({ 
+    page: 1,
+    limit: 6, 
+    status: 'published',
+    sort: 'created_at',
+    order: 'DESC'
+  });
+  knowledgeItems = knowledgeResponse.data || [];
+} catch (error) {
+  console.error('获取知识问答数据失败:', error);
+}
+
+// 获取医院数据（评分最高的6家）
+let hospitals = [];
+try {
+  const hospitalResponse = await hospitalAPI.getList({ 
+    page: 1,
+    limit: 6, 
+    status: 'active',
+    sort: 'rating',
+    order: 'DESC'
+  });
+  hospitals = hospitalResponse.data || [];
+} catch (error) {
+  console.error('获取医院数据失败:', error);
+}
+
+// 生成星星显示
+function generateStars(rating) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  
+  let stars = '';
+  for (let i = 0; i < fullStars; i++) {
+    stars += '★';
+  }
+  if (hasHalfStar) {
+    stars += '☆';
+  }
+  for (let i = 0; i < emptyStars; i++) {
+    stars += '☆';
+  }
+  return stars;
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout 
+  title="Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam - Nền tảng Phẫu thuật Thẩm mỹ Uy tín #1"
+  description="Nền tảng phẫu thuật thẩm mỹ hàng đầu Việt Nam - Tư vấn miễn phí, 122+ bệnh viện uy tín, 10000+ ca thành công. Chuyên nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da. Hotline 24/7: +84 921000789"
+  keywords="phẫu thuật thẩm mỹ Việt Nam, bệnh viện thẩm mỹ uy tín, nâng mũi Hà Nội, cắt mí TP.HCM, gọt mặt Đà Nẵng, nâng ngực an toàn, hút mỡ bụng, làm đẹp da mặt, phẫu thuật thẩm mỹ giá rẻ, bác sĩ thẩm mỹ chuyên nghiệp, tư vấn phẫu thuật miễn phí, đánh giá bệnh viện thẩm mỹ, chia sẻ kinh nghiệm thẩm mỹ, hỏi đáp bác sĩ thẩm mỹ, phẫu thuật thẩm mỹ Hàn Quốc, thẩm mỹ viện quốc tế, hotline tư vấn 24/7, WeChat tư vấn thẩm mỹ"
+>
+  <!-- 预加载Hero图片 -->
+  <link slot="head" rel="preload" as="image" href="/images/hero.webp" type="image/webp" fetchpriority="high" />
+  <link slot="head" rel="preload" as="image" href="/images/hero.png" type="image/png" fetchpriority="high" />
+  <!-- Hero区域 -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <!-- Hero背景图片 -->
+    <div class="absolute inset-0 z-0">
+      <picture>
+        <source srcset="/images/hero.webp" type="image/webp" />
+        <img 
+          src="/images/hero.png" 
+          alt="Vietnam Medical Beauty" 
+          class="w-full h-full object-cover"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </picture>
+      <!-- 渐变遮罩层 - 从左到右渐变 -->
+      <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40"></div>
+      <!-- 底部渐变 -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+    </div>
+    
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="inline-block mb-6">
+        <span class="px-4 py-2 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-400/30 rounded-full text-pink-300 text-sm font-semibold backdrop-blur-md">
+          ✨ Nền tảng uy tín #1 Việt Nam
+        </span>
+      </div>
+      
+      <h1 class="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+        <span class="bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 bg-clip-text text-transparent">
+          Việt Nam Lý Nhân
+        </span>
+        <br />
+        <span class="text-white drop-shadow-lg">Thẩm Mỹ Chỉ Nam</span>
+      </h1>
+      
+      <p class="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
+        Cung cấp dịch vụ tư vấn phẫu thuật thẩm mỹ chuyên nghiệp nhất, tập hợp thông tin bệnh viện uy tín, chia sẻ người dùng thực tế, giúp bạn đưa ra lựa chọn thông minh
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+        <a href="/contact" class="btn-primary text-lg px-10 py-5 shadow-2xl hover:shadow-pink-500/50">
+          📞 Bắt đầu tư vấn
+        </a>
+        <a href="/reviews" class="px-10 py-5 bg-white/10 backdrop-blur-md text-white rounded-xl border-2 border-white/30 hover:bg-white/20 transition-all text-lg font-semibold">
+          🏥 Tìm hiểu thêm
+        </a>
+      </div>
+      
+      <!-- 特色数据 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto">
+        <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold text-pink-300 mb-1">500+</div>
+          <div class="text-white/80 text-sm">Bệnh viện đối tác</div>
+        </div>
+        <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold text-purple-300 mb-1">10000+</div>
+          <div class="text-white/80 text-sm">Ca thành công</div>
+        </div>
+        <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold text-blue-300 mb-1">98%</div>
+          <div class="text-white/80 text-sm">Hài lòng</div>
+        </div>
+        <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold text-cyan-300 mb-1">24/7</div>
+          <div class="text-white/80 text-sm">Dịch vụ trực tuyến</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chia sẻ người dùng -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold gradient-text-blue mb-4">Chia sẻ người dùng</h2>
+        <p class="text-white/70 text-lg">Chia sẻ trải nghiệm phẫu thuật thẩm mỹ thực tế</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {userShares.map((share) => {
+          const randomViews = Math.floor(Math.random() * 501) + 500;
+          const randomLikes = Math.floor(Math.random() * 151) + 50;
+          
+          // 格式化上传时间
+          let uploadDateTime = '';
+          try {
+            const timeStr = share.created_at || share.createdAt || share.updated_at || share.updatedAt;
+            if (timeStr) {
+              const date = new Date(timeStr);
+              uploadDateTime = date.toLocaleString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Ho_Chi_Minh'
+              });
+            } else {
+              uploadDateTime = 'Chưa rõ thời gian';
+            }
+          } catch (e) {
+            uploadDateTime = 'Chưa rõ thời gian';
+          }
+          
+          return (
+          <a href={`/sharing/${share.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[320px] flex flex-col">
+            <!-- 标题和分类标签 -->
+            <div class="mb-4 flex-shrink-0">
+              <h3 class="text-white font-semibold text-base mb-3 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                {share.title || 'Chia sẻ phẫu thuật'}
+              </h3>
+              <span class="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">
+                {share.surgery_type || 'Chia sẻ chung'}
+              </span>
+            </div>
+            
+            <!-- 内容 - 填满空间 -->
+            <div class="mb-4 flex-grow overflow-hidden">
+              <p class="text-white/80 text-sm leading-relaxed line-clamp-[10]">
+                {share.content || 'Chia sẻ trải nghiệm phẫu thuật thẩm mỹ...'}
+              </p>
+            </div>
+            
+            <!-- 底部信息栏 -->
+            <div class="pt-4 border-t border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between">
+                <!-- 左侧：统计数据 -->
+                <div class="flex items-center space-x-3 text-xs">
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                    </svg>
+                    {randomLikes}
+                  </span>
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {randomViews}
+                  </span>
+                </div>
+                
+                <!-- 中间：上传时间 -->
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-white/60 text-xs">{uploadDateTime}</span>
+                </div>
+                
+                <!-- 右侧：详情链接 -->
+                <span class="text-blue-400 group-hover:text-blue-300 transition-colors text-xs">
+                  Chi tiết →
+                </span>
+              </div>
+            </div>
+          </a>
+          );
+        })}
+      </div>
+      
+      <!-- 查看更多按钮 -->
+      <div class="text-center mt-12">
+        <a href="/sharing" class="btn-primary inline-block">
+          Xem thêm chia sẻ →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hỏi đáp -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold gradient-text-blue mb-4">Hỏi đáp</h2>
+        <p class="text-white/70 text-lg">Bác sĩ chuyên nghiệp giải đáp thắc mắc của bạn</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {knowledgeItems.map((item) => {
+          const randomViews = Math.floor(Math.random() * 501) + 500;
+          const randomLikes = Math.floor(Math.random() * 151) + 50;
+          
+          // 格式化上传时间
+          let uploadDateTime = '';
+          try {
+            const timeStr = item.created_at || item.createdAt || item.updated_at || item.updatedAt;
+            if (timeStr) {
+              const date = new Date(timeStr);
+              uploadDateTime = date.toLocaleString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Ho_Chi_Minh'
+              });
+            } else {
+              uploadDateTime = 'Chưa rõ thời gian';
+            }
+          } catch (e) {
+            uploadDateTime = 'Chưa rõ thời gian';
+          }
+          
+          return (
+          <a href={`/knowledge/${item.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[320px] flex flex-col">
+            <!-- 标题和分类标签 -->
+            <div class="mb-4 flex-shrink-0">
+              <h3 class="text-white font-semibold text-base mb-3 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                {item.question || 'Câu hỏi'}
+              </h3>
+              <span class="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+                {item.category || 'Tư vấn chung'}
+              </span>
+            </div>
+            
+            <!-- 内容 - 填满空间 -->
+            <div class="mb-4 flex-grow overflow-hidden">
+              <p class="text-white/80 text-sm leading-relaxed line-clamp-[10]">
+                {item.answer || 'Bác sĩ sẽ giải đáp câu hỏi của bạn...'}
+              </p>
+            </div>
+            
+            <!-- 底部信息栏 -->
+            <div class="pt-4 border-t border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between">
+                <!-- 左侧：统计数据 -->
+                <div class="flex items-center space-x-3 text-xs">
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                    </svg>
+                    {randomLikes}
+                  </span>
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {randomViews}
+                  </span>
+                </div>
+                
+                <!-- 中间：上传时间 -->
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-white/60 text-xs">{uploadDateTime}</span>
+                </div>
+                
+                <!-- 右侧：详情链接 -->
+                <span class="text-blue-400 group-hover:text-blue-300 transition-colors text-xs">
+                  Chi tiết →
+                </span>
+              </div>
+            </div>
+          </a>
+          );
+        })}
+      </div>
+      
+      <!-- 查看更多按钮 -->
+      <div class="text-center mt-12">
+        <a href="/knowledge" class="btn-primary inline-block">
+          Xem thêm câu hỏi →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Giới thiệu bệnh viện -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold gradient-text-blue mb-4">Giới thiệu bệnh viện</h2>
+        <p class="text-white/70 text-lg">Đánh giá và đề xuất bệnh viện thực tế</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {hospitals.map((hospital) => {
+          const viewCount = Math.floor(Math.random() * 2001) + 1000;
+          
+          return (
+          <a href={`/reviews/${hospital.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[340px] flex flex-col">
+            
+            <!-- Tiêu đề bệnh viện - 固定高度 -->
+            <div class="mb-4 flex-shrink-0">
+              <h3 class="text-white font-semibold text-base group-hover:text-green-400 transition-colors line-clamp-2 mb-2 h-12">
+                {hospital.name || 'Bệnh viện thẩm mỹ'}
+              </h3>
+              <p class="text-white/60 text-xs mb-2">{hospital.district}, {hospital.city}</p>
+              
+              <!-- Chuyên khoa tags -->
+              <div class="flex flex-wrap gap-1">
+                {hospital.specialties && hospital.specialties.slice(0, 2).map((specialty) => (
+                  <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded border border-blue-400/30">
+                    {specialty}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Nội dung mô tả - 完整展示，不截断，字体增加2号 -->
+            <div class="mb-3 flex-grow overflow-y-auto">
+              <p class="text-white/80 text-sm leading-tight">
+                {hospital.description || 'Bệnh viện thẩm mỹ chuyên nghiệp với đội ngũ bác sĩ giàu kinh nghiệm và thiết bị hiện đại...'}
+              </p>
+            </div>
+
+            <!-- Thông tin đánh giá和浏览数 - 固定高度，单行显示 -->
+            <div class="pt-4 border-t border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between">
+                <!-- 左侧：浏览数 -->
+                <div class="flex items-center text-xs">
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {viewCount.toLocaleString()}
+                  </span>
+                </div>
+
+                <!-- 中间：星星和评分 -->
+                <div class="flex items-center space-x-2">
+                  <div class="flex items-center text-yellow-400 text-sm">
+                    {generateStars(hospital.rating)}
+                  </div>
+                  <span class="text-white font-semibold text-sm">{hospital.rating}</span>
+                </div>
+
+                <!-- 右侧：详情链接 -->
+                <span class="text-green-400 group-hover:text-green-300 transition-colors text-xs">
+                  Chi tiết →
+                </span>
+              </div>
+            </div>
+          </a>
+          );
+        })}
+      </div>
+      
+      <!-- 查看更多按钮 -->
+      <div class="text-center mt-12">
+        <a href="/reviews" class="btn-primary inline-block">
+          Xem tất cả bệnh viện →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nội dung dịch vụ -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold gradient-text-blue mb-4">Nội dung dịch vụ</h2>
+        <p class="text-white/70 text-lg">Dịch vụ phẫu thuật thẩm mỹ toàn diện</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 1. Đánh giá rủi ro & tư vấn gói làm đẹp -->
+        <div class="media-card">
+          <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-2xl flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-xl mb-3">Đánh giá rủi ro & tư vấn gói làm đẹp</h3>
+          <p class="text-white/70 leading-relaxed">Giúp người dùng hiểu rõ chi phí, đối tượng phù hợp, rủi ro và thời gian hồi phục của từng phương pháp, để biết mình có nên làm và chọn hướng phù hợp nhất.</p>
+        </div>
+
+        <!-- 2. Tư vấn & giải đáp thắc mắc thẩm mỹ -->
+        <div class="media-card">
+          <div class="w-16 h-16 bg-gradient-to-r from-green-400 to-teal-400 rounded-2xl flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-xl mb-3">Tư vấn & giải đáp thắc mắc thẩm mỹ</h3>
+          <p class="text-white/70 leading-relaxed">Giúp người dùng nhanh chóng tìm được câu trả lời cho các thắc mắc thường gặp: chuẩn bị trước khi làm, chăm sóc sau thủ thuật, sự khác biệt về giá và thời gian hiệu quả.</p>
+        </div>
+
+        <!-- 3. Hỗ trợ đặt lịch bệnh viện -->
+        <div class="media-card">
+          <div class="w-16 h-16 bg-gradient-to-r from-pink-400 to-rose-400 rounded-2xl flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-xl mb-3">Hỗ trợ đặt lịch bệnh viện</h3>
+          <p class="text-white/70 leading-relaxed">Giúp người dùng tìm bệnh viện uy tín phù hợp với ngân sách và thành phố của mình, đồng thời hướng dẫn các bước chuẩn bị trước khi đến khám.</p>
+        </div>
+
+        <!-- 4. Kiểm tra & xác minh thông tin bệnh viện -->
+        <div class="media-card">
+          <div class="w-16 h-16 bg-gradient-to-r from-orange-400 to-amber-400 rounded-2xl flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0121 12a11.955 11.955 0 01-1.382 5.618m0 0A11.945 11.945 0 0112 21c-2.331 0-4.512-.645-6.382-1.764m12.764 0l-3.197-3.197m0 0A5.99 5.99 0 0012 15.75a5.99 5.99 0 00-3.185 1.289m6.37 0l-3.197 3.197M3 12a11.955 11.955 0 011.382-5.618m0 0A11.945 11.945 0 0112 3c2.331 0 4.512.645 6.382 1.764M4.382 6.382l3.197 3.197m0 0A5.99 5.99 0 0012 8.25a5.99 5.99 0 003.185 1.289m-6.37 0l3.197-3.197"></path>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-xl mb-3">Kiểm tra & xác minh thông tin bệnh viện</h3>
+          <p class="text-white/70 leading-relaxed">Giúp người dùng xác minh giấy phép, thiết bị, điều kiện vệ sinh và đánh giá uy tín của bệnh viện, để an tâm hơn trước khi lựa chọn.</p>
+        </div>
+
+        <!-- 5. Tư vấn trả góp chi phí y tế -->
+        <div class="media-card">
+          <div class="w-16 h-16 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-2xl flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-xl mb-3">Tư vấn trả góp chi phí y tế</h3>
+          <p class="text-white/70 leading-relaxed">Giúp người dùng hiểu rõ các gói trả góp từ ngân hàng hoặc tổ chức tài chính, nắm rõ lãi suất, phí dịch vụ và kế hoạch thanh toán, chi tiêu minh bạch và chủ động.</p>
+        </div>
+
+        <!-- 6. Hỗ trợ khiếu nại & bảo vệ quyền lợi -->
+        <div class="media-card">
+          <div class="w-16 h-16 bg-gradient-to-r from-red-400 to-pink-400 rounded-2xl flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+          <h3 class="text-white font-semibold text-xl mb-3">Hỗ trợ khiếu nại & bảo vệ quyền lợi</h3>
+          <p class="text-white/70 leading-relaxed">Giúp người dùng khi gặp vấn đề về dịch vụ hoặc kết quả thẩm mỹ, chuẩn bị hồ sơ, thu thập bằng chứng và hướng dẫn nộp đơn đến cơ quan chức năng hoặc trung tâm hòa giải.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

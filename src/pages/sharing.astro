@@ -1,0 +1,283 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+import { userShareAPI } from '../utils/api.js';
+
+// Lấy tham số URL
+const url = new URL(Astro.request.url);
+const page = parseInt(url.searchParams.get('page')) || 1;
+const surgeryType = url.searchParams.get('surgery_type') || '';
+const limit = 36; // Mỗi trang 36 khối media
+const offset = (page - 1) * limit;
+
+// Lấy dữ liệu chia sẻ người dùng
+let userShares = [];
+let totalCount = 0;
+let totalPages = 0;
+
+try {
+  const params = { 
+    page: page,
+    limit: limit, 
+    status: 'published' 
+  };
+  
+  // 如果有手术类型筛选
+  if (surgeryType) {
+    params.surgery_type = surgeryType;
+  }
+  
+  const response = await userShareAPI.getList(params);
+  userShares = response.data || [];
+  totalCount = response.pagination?.total || 0;
+  totalPages = response.pagination?.pages || 0;
+  
+  console.log(`✅ 从API获取到 ${userShares.length} 条用户分享 (类型: ${surgeryType || '全部'})`);
+} catch (error) {
+  console.error('Lấy dữ liệu chia sẻ người dùng thất bại:', error);
+  // Sử dụng dữ liệu mặc định làm dự phòng
+  userShares = [
+    {
+      id: 10,
+      title: 'Trải nghiệm Nâng mũi Sụn sườn tại Hồ Chí Minh',
+      content: 'Kinh nghiệm hồi phục, ăn gì để mau lành và những điều cần tránh...',
+      surgery_type: 'Phẫu thuật thẩm mỹ',
+      hospital_name: 'Bệnh viện thẩm mỹ TP.HCM',
+      rating: 5,
+      like_count: 128,
+      view_count: 456,
+      created_at: new Date('2024-03-12')
+    },
+    {
+      id: 11,
+      title: 'Trải nghiệm Nâng mũi cấu trúc tại Đà Nẵng',
+      content: 'Kinh nghiệm hồi phục, chăm sóc và tránh sai lầm phổ biến...',
+      surgery_type: 'Phẫu thuật thẩm mỹ',
+      hospital_name: 'Trung tâm thẩm mỹ Đà Nẵng',
+      rating: 5,
+      like_count: 95,
+      view_count: 342,
+      created_at: new Date('2024-03-15')
+    },
+    {
+      id: 12,
+      title: 'Trải nghiệm Nâng mũi bán cấu trúc tại Đà Nẵng',
+      content: 'Kinh nghiệm hồi phục, ăn uống và những lưu ý quan trọng...',
+      surgery_type: 'Phẫu thuật thẩm mỹ',
+      hospital_name: 'Phòng khám thẩm mỹ Đà Nẵng',
+      rating: 4,
+      like_count: 78,
+      view_count: 289,
+      created_at: new Date('2024-03-18')
+    }
+  ];
+  totalCount = userShares.length;
+  totalPages = 1;
+}
+---
+
+<Layout 
+  title="Chia sẻ kinh nghiệm phẫu thuật thẩm mỹ - Câu chuyện thật từ 1000+ khách hàng"
+  description="Chia sẻ kinh nghiệm phẫu thuật thẩm mỹ thực tế từ 1000+ khách hàng. Review chi tiết về nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da tại các bệnh viện uy tín TP.HCM, Hà Nội, Đà Nẵng. Xem ảnh trước sau, đánh giá bác sĩ, chi phí thực tế, thời gian hồi phục"
+  keywords="chia sẻ kinh nghiệm phẫu thuật thẩm mỹ, review bệnh viện thẩm mỹ uy tín, kinh nghiệm nâng mũi thành công, chia sẻ cắt mí đẹp, trải nghiệm gọt mặt thực tế, review nâng ngực an toàn, chia sẻ hút mỡ bụng, kinh nghiệm làm đẹp da, đánh giá bác sĩ thẩm mỹ, ảnh trước sau phẫu thuật, chi phí thực tế phẫu thuật, bệnh viện nào tốt nhất, kinh nghiệm khách hàng thực tế, review chân thực, phẫu thuật TP.HCM, thẩm mỹ Hà Nội, nâng mũi Đà Nẵng, cắt mí Hải Phòng, kinh nghiệm chọn bệnh viện, review bác sĩ giỏi, chia sẻ chi phí, thời gian hồi phục, kết quả phẫu thuật, quá trình phẫu thuật, cảm nhận sau phẫu thuật, lời khuyên cho người mới, kinh nghiệm chọn bác sĩ, review dịch vụ bệnh viện, đánh giá chất lượng, chia sẻ video, ảnh thực tế, kinh nghiệm chuẩn bị, review phục hồi sau sinh, thẩm mỹ khuôn mặt, thẩm mỹ ngực, hút mỡ tạo dáng, review botox, kinh nghiệm căng da, chia sẻ niềng răng, review thành công, kinh nghiệm thất bại, lưu ý khi phẫu thuật"
+>
+  <!-- Đầu trang -->
+  <section class="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto text-center">
+      <h1 class="text-5xl font-bold gradient-text-purple mb-6">Chia sẻ người dùng</h1>
+      <p class="text-white/70 text-xl max-w-3xl mx-auto">
+        Chia sẻ trải nghiệm phẫu thuật thẩm mỹ của người dùng thực tế, cung cấp tham khảo cho hành trình làm đẹp của bạn
+      </p>
+    </div>
+  </section>
+
+  <!-- Lọc chia sẻ -->
+  <section class="pb-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="glass rounded-2xl p-6">
+        <div class="flex flex-wrap gap-4 justify-center">
+          <a 
+            href="/sharing" 
+            class={`px-6 py-3 rounded-xl border transition-all ${!surgeryType ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Tất cả chia sẻ
+          </a>
+          <a 
+            href="/sharing?surgery_type=Phẫu thuật mũi" 
+            class={`px-6 py-3 rounded-xl border transition-all ${surgeryType === 'Phẫu thuật mũi' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Phẫu thuật mũi
+          </a>
+          <a 
+            href="/sharing?surgery_type=Phẫu thuật mắt" 
+            class={`px-6 py-3 rounded-xl border transition-all ${surgeryType === 'Phẫu thuật mắt' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Phẫu thuật mắt
+          </a>
+          <a 
+            href="/sharing?surgery_type=Đường nét khuôn mặt" 
+            class={`px-6 py-3 rounded-xl border transition-all ${surgeryType === 'Đường nét khuôn mặt' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Đường nét khuôn mặt
+          </a>
+          <a 
+            href="/sharing?surgery_type=Nâng ngực" 
+            class={`px-6 py-3 rounded-xl border transition-all ${surgeryType === 'Nâng ngực' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Nâng ngực
+          </a>
+          <a 
+            href="/sharing?surgery_type=Hút mỡ tạo hình" 
+            class={`px-6 py-3 rounded-xl border transition-all ${surgeryType === 'Hút mỡ tạo hình' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Hút mỡ tạo hình
+          </a>
+          <a 
+            href="/sharing?surgery_type=Làm đẹp da" 
+            class={`px-6 py-3 rounded-xl border transition-all ${surgeryType === 'Làm đẹp da' ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'}`}
+          >
+            Làm đẹp da
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nội dung chia sẻ người dùng -->
+  <section class="pb-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- Lưới khối media - bố cục 3 cột -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {userShares.map((share) => {
+          // 生成随机数据
+          const randomViews = Math.floor(Math.random() * 501) + 500;  // 500-1000
+          const randomLikes = Math.floor(Math.random() * 151) + 50;   // 50-200
+          
+          // 格式化完整的日期和时间 - 使用数据库中的上传时间
+          let uploadDateTime = '';
+          try {
+            // 尝试解析 created_at 或 createdAt 字段
+            const timeStr = share.created_at || share.createdAt || share.updated_at || share.updatedAt;
+            if (timeStr) {
+              const date = new Date(timeStr);
+              // 格式化为越南时区的时间
+              uploadDateTime = date.toLocaleString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Ho_Chi_Minh'
+              });
+            } else {
+              uploadDateTime = 'Chưa rõ thời gian';
+            }
+          } catch (e) {
+            uploadDateTime = 'Chưa rõ thời gian';
+          }
+          
+          return (
+          <a href={`/sharing/${share.id}`} class="media-card group hover:scale-105 transition-transform duration-300 block h-[320px] flex flex-col">
+            <!-- 标题和分类标签 -->
+            <div class="mb-4 flex-shrink-0">
+              <h3 class="text-white font-semibold text-base group-hover:text-blue-400 transition-colors line-clamp-2 mb-3">
+                {share.title || 'Chia sẻ phẫu thuật'}
+              </h3>
+              <span class="inline-block px-3 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">
+                {share.surgery_type || 'Chia sẻ chung'}
+              </span>
+            </div>
+            
+            <!-- 内容 - 填满空间 -->
+            <div class="mb-4 flex-grow overflow-hidden">
+              <p class="text-white/80 text-sm leading-relaxed line-clamp-[10]">
+                {share.content || 'Chia sẻ trải nghiệm phẫu thuật thẩm mỹ...'}
+              </p>
+            </div>
+            
+            <!-- 底部信息栏 - 与问答页面一致 -->
+            <div class="pt-4 border-t border-white/10 flex-shrink-0">
+              <div class="flex items-center justify-between">
+                <!-- 左侧：统计数据 -->
+                <div class="flex items-center space-x-3 text-xs">
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                    </svg>
+                    {randomLikes}
+                  </span>
+                  <span class="flex items-center text-white/60">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    {randomViews}
+                  </span>
+                </div>
+                
+                <!-- 中间：上传时间 -->
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-white/60 text-xs">{uploadDateTime}</span>
+                </div>
+                
+                <!-- 右侧：详情链接 -->
+                <span class="text-blue-400 group-hover:text-blue-300 transition-colors text-xs">
+                  Chi tiết →
+                </span>
+              </div>
+            </div>
+          </a>
+          );
+        })}
+      </div>
+
+      <!-- Điều hướng phân trang -->
+      {totalPages > 1 && (
+        <div class="flex justify-center items-center mt-12 space-x-2">
+          <!-- Trang trước -->
+          {page > 1 && (
+            <a href={`/sharing?page=${page - 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
+              Trang trước
+            </a>
+          )}
+          
+          <!-- Số trang -->
+          {page > 3 && totalPages > 5 && (
+            <a href={`/sharing?page=1${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">1</a>
+          )}
+          {page > 4 && totalPages > 5 && (
+            <span class="px-2 text-white/50">...</span>
+          )}
+          
+          {page > 2 && (
+            <a href={`/sharing?page=${page - 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page - 1}</a>
+          )}
+          
+          <a href={`/sharing?page=${page}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-blue-500 text-white rounded-lg">{page}</a>
+          
+          {page < totalPages - 1 && (
+            <a href={`/sharing?page=${page + 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page + 1}</a>
+          )}
+          
+          {page < totalPages - 3 && totalPages > 5 && (
+            <span class="px-2 text-white/50">...</span>
+          )}
+          {page < totalPages - 2 && totalPages > 5 && (
+            <a href={`/sharing?page=${totalPages}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{totalPages}</a>
+          )}
+          
+          <!-- Trang sau -->
+          {page < totalPages && (
+            <a href={`/sharing?page=${page + 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
+              Trang sau
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
