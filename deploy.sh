@@ -120,7 +120,27 @@ else
 fi
 
 # ================================
-# 第四部分：部署完成信息
+# 第四部分：配置保护设置
+# ================================
+echo ""
+echo "🔒 ========== 配置保护设置 =========="
+
+# 保护Nginx配置文件
+echo "🛡️ 设置Nginx配置文件保护..."
+/root/越南医疗整形项目/scripts/protect-nginx-config.sh
+
+# 设置定时检查任务
+echo "⏰ 设置定时配置检查任务..."
+crontab -l | grep -v "nginx-config" > /tmp/crontab_backup
+echo "# 越南医疗整形项目 - Nginx配置保护检查（每小时检查一次）" >> /tmp/crontab_backup
+echo "0 * * * * /root/越南医疗整形项目/scripts/protect-nginx-config.sh >/dev/null 2>&1" >> /tmp/crontab_backup
+crontab /tmp/crontab_backup
+rm -f /tmp/crontab_backup
+
+echo "✅ 配置保护设置完成"
+
+# ================================
+# 第五部分：部署完成信息
 # ================================
 echo ""
 echo "🎉 ========== 部署完成 =========="
@@ -157,4 +177,12 @@ echo "   日志: journalctl -u vietnam-medical-backend.service -f"
 echo ""
 echo "📋 检查所有服务状态:"
 echo "   systemctl status vietnam-medical.service vietnam-medical-backend.service"
+echo ""
+echo "🔒 配置管理命令:"
+echo "   状态: /root/越南医疗整形项目/scripts/nginx-config-manager.sh status"
+echo "   保护: /root/越南医疗整形项目/scripts/nginx-config-manager.sh protect"
+echo "   备份: /root/越南医疗整形项目/scripts/nginx-config-manager.sh backup"
+echo "   恢复: /root/越南医疗整形项目/scripts/nginx-config-manager.sh restore"
+echo "   重载: /root/越南医疗整形项目/scripts/nginx-config-manager.sh reload"
+echo "   日志: /root/越南医疗整形项目/scripts/nginx-config-manager.sh logs"
 echo ""
