@@ -122,9 +122,9 @@ try {
 ---
 
 <Layout 
-  title="Hỏi đáp phẫu thuật thẩm mỹ - Bác sĩ chuyên khoa tư vấn miễn phí"
-  description="Hỏi đáp trực tuyến với bác sĩ phẫu thuật thẩm mỹ chuyên nghiệp. Giải đáp thắc mắc về nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da, niềng răng. Tư vấn bệnh viện uy tín, chi phí, quy trình, rủi ro, chăm sóc sau phẫu thuật. Miễn phí 100%"
-  keywords="hỏi đáp phẫu thuật thẩm mỹ, tư vấn bác sĩ thẩm mỹ miễn phí, câu hỏi nâng mũi, cắt mí có đau không, gọt mặt an toàn không, nâng ngực hồi phục bao lâu, hút mỡ bụng giá bao nhiêu, làm đẹp da mặt hiệu quả, niềng răng mất bao lâu, botox có tác dụng phụ không, căng da mặt có đau không, chi phí phẫu thuật thẩm mỹ, thời gian hồi phục, rủi ro phẫu thuật, biến chứng phẫu thuật, chọn bệnh viện thẩm mỹ, bác sĩ nào giỏi, tư vấn bệnh viện miễn phí, địa chỉ bệnh viện uy tín, số điện thoại bệnh viện, đội ngũ bác sĩ chuyên khoa, chứng nhận bệnh viện, hạng bệnh viện, dịch vụ bệnh viện, hỏi bác sĩ trực tuyến, kinh nghiệm phẫu thuật, quy trình thẩm mỹ, chuẩn bị trước phẫu thuật, chăm sóc sau phẫu thuật, phục hồi sau sinh, thẩm mỹ khuôn mặt, thẩm mỹ ngực, hút mỡ tạo dáng, phẫu thuật an toàn, bác sĩ tư vấn chuyên nghiệp, tư vấn chi phí miễn phí, đánh giá bệnh viện thẩm mỹ, review bác sĩ, câu hỏi thường gặp, giải đáp thắc mắc, tư vấn trực tuyến 24/7"
+  title="1000+ Hỏi đáp phẫu thuật thẩm mỹ | Bác sĩ chuyên khoa tư vấn miễn phí"
+  description="Hỏi đáp trực tuyến với bác sĩ phẫu thuật thẩm mỹ chuyên nghiệp. Giải đáp thắc mắc về nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da. Tư vấn chi phí, quy trình, rủi ro, chăm sóc. Miễn phí 100%"
+  keywords="hỏi đáp phẫu thuật thẩm mỹ, tư vấn bác sĩ miễn phí, nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da, chi phí phẫu thuật, thời gian hồi phục, rủi ro, chăm sóc sau phẫu thuật"
 >
   <!-- Đầu trang -->
   <section class="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
@@ -295,47 +295,103 @@ try {
         })}
       </div>
 
-      <!-- Điều hướng phân trang -->
+      <!-- Điều hướng phân trang nâng cao -->
       {totalPages > 1 && (
-        <div class="flex justify-center items-center mt-12 space-x-2">
-          <!-- Trang trước -->
-          {page > 1 && (
-            <a href={`/knowledge?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
-              Trang trước
-            </a>
-          )}
+        <div class="mt-12">
+          <!-- Thông tin phân trang -->
+          <div class="text-center mb-6">
+            <p class="text-white/70 text-sm">
+              Trang {page} / {totalPages} ({totalCount} câu hỏi)
+            </p>
+          </div>
           
-          <!-- Số trang -->
-          {page > 3 && totalPages > 5 && (
-            <a href={`/knowledge?page=1${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">1</a>
-          )}
-          {page > 4 && totalPages > 5 && (
-            <span class="px-2 text-white/50">...</span>
-          )}
+          <!-- Nút phân trang -->
+          <div class="flex justify-center items-center flex-wrap gap-2">
+            {(() => {
+              const pagesPerGroup = 20;
+              const currentGroup = Math.floor((page - 1) / pagesPerGroup);
+              const groupStartPage = currentGroup * pagesPerGroup + 1;
+              const groupEndPage = Math.min(groupStartPage + pagesPerGroup - 1, totalPages);
+              
+              return [
+                // Nút nhóm trước
+                currentGroup > 0 && (
+                  <a 
+                    href={`/knowledge?page=${(currentGroup - 1) * pagesPerGroup + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
+                    class="px-3 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all text-sm font-medium"
+                  >
+                    ← {(currentGroup - 1) * pagesPerGroup + 1}-{Math.min(currentGroup * pagesPerGroup, totalPages)}
+                  </a>
+                ),
+                
+                // Nút trang trước
+                page > 1 && (
+                  <a 
+                    href={`/knowledge?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
+                    class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors"
+                  >
+                    Trước
+                  </a>
+                ),
+                
+                // Các nút trang
+                ...Array.from({length: groupEndPage - groupStartPage + 1}, (_, index) => {
+                  const pageNum = groupStartPage + index;
+                  return (
+                    <a 
+                      href={`/knowledge?page=${pageNum}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
+                      class={pageNum === page 
+                        ? 'px-3 py-2 rounded-lg transition-all min-w-[40px] text-center bg-blue-500 text-white font-semibold'
+                        : 'px-3 py-2 rounded-lg transition-all min-w-[40px] text-center bg-white/10 text-white/70 hover:bg-white/20'
+                      }
+                    >
+                      {pageNum}
+                    </a>
+                  );
+                }),
+                
+                // Nút trang sau
+                page < totalPages && (
+                  <a 
+                    href={`/knowledge?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
+                    class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors"
+                  >
+                    Sau
+                  </a>
+                ),
+                
+                // Nút nhóm sau
+                groupEndPage < totalPages && (
+                  <a 
+                    href={`/knowledge?page=${groupEndPage + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
+                    class="px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all text-sm font-medium"
+                  >
+                    {groupEndPage + 1}-{Math.min(groupEndPage + pagesPerGroup, totalPages)} →
+                  </a>
+                )
+              ].filter(Boolean);
+            })()}
+          </div>
           
-          {page > 2 && (
-            <a href={`/knowledge?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page - 1}</a>
-          )}
-          
-          <a href={`/knowledge?page=${page}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-blue-500 text-white rounded-lg">{page}</a>
-          
-          {page < totalPages - 1 && (
-            <a href={`/knowledge?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page + 1}</a>
-          )}
-          
-          {page < totalPages - 3 && totalPages > 5 && (
-            <span class="px-2 text-white/50">...</span>
-          )}
-          {page < totalPages - 2 && totalPages > 5 && (
-            <a href={`/knowledge?page=${totalPages}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{totalPages}</a>
-          )}
-          
-          <!-- Trang sau -->
-          {page < totalPages && (
-            <a href={`/knowledge?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
-              Trang sau
-            </a>
-          )}
+          <!-- Chuyển trang nhanh -->
+          <div class="flex justify-center items-center mt-6 gap-3">
+            <span class="text-white/70 text-sm">Chuyển đến:</span>
+            <input 
+              type="number" 
+              min="1" 
+              max={totalPages}
+              placeholder="Trang"
+              class="w-20 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center focus:outline-none focus:border-blue-400 focus:bg-white/20"
+              onkeypress={`
+                if (event.key === 'Enter') {
+                  const pageNum = parseInt(event.target.value);
+                  if (pageNum >= 1 && pageNum <= ${totalPages}) {
+                    window.location.href = '/knowledge?page=' + pageNum + '${category ? `&category=${encodeURIComponent(category)}` : ''}';
+                  }
+                }
+              `}
+            />
+          </div>
         </div>
       )}
     </div>

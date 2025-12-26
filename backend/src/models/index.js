@@ -6,9 +6,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 数据库连接配置
+// database.sqlite: 前端越南语网站数据（医院、用户分享、越南语问答）
+// medical.db: 后端中文智能体数据（仅供智能体训练使用）
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: path.join(__dirname, '../../data/medical.db'),
+  storage: path.join(__dirname, '../../data/database.sqlite'),
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   define: {
     timestamps: true,

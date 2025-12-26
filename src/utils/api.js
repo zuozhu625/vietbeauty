@@ -1,5 +1,5 @@
 // 前端API调用工具
-const API_BASE_URL = 'http://localhost:5002/api';
+const API_BASE_URL = 'http://47.237.79.9:5002/api';
 
 // 通用API请求函数
 async function apiRequest(endpoint, options = {}) {

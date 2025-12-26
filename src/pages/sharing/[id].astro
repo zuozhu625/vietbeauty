@@ -6,60 +6,13 @@ import { userShareAPI } from '../../utils/api.js';
 // 获取路由参数
 const { id } = Astro.params;
 
-// 为静态生成提供路径
-export async function getStaticPaths() {
-  try {
-    const response = await userShareAPI.getList({ limit: 100, status: 'published' });
-    const shares = response.data || [];
-    
-    return shares.map((share) => ({
-      params: { id: share.id.toString() },
-      props: { share }
-    }));
-  } catch (error) {
-    console.error('获取静态路径失败:', error);
-    // 返回一些默认路径
-    return [
-      { params: { id: '1' }, props: { share: null } },
-      { params: { id: '2' }, props: { share: null } },
-      { params: { id: '3' }, props: { share: null } }
-    ];
-  }
-}
-
-// 获取分享详情数据
+// 纯SSR模式：每次请求时动态获取数据
 let shareDetail = null;
 try {
-  // 首先尝试使用 props 中的数据
-  if (Astro.props.share) {
-    shareDetail = Astro.props.share;
-  } else {
-    // 如果没有 props 数据，则从 API 获取
-    const response = await userShareAPI.getDetail(id);
-    shareDetail = response.data;
-  }
+  const response = await userShareAPI.getDetail(id);
+  shareDetail = response.data;
 } catch (error) {
   console.error('获取分享详情失败:', error);
-  // 使用默认数据作为后备
-  shareDetail = {
-    id: id,
-    user_name: 'Chị Lý',
-    user_avatar: '/images/avatar-default.jpg',
-    age: 28,
-    surgery_type: 'Phẫu thuật mũi',
-    recovery_status: 'Đã phục hồi hoàn toàn',
-    content: 'Chia sẻ chi tiết về quá trình phẫu thuật và phục hồi...',
-    images: ['/images/before-after-1.jpg', '/images/before-after-2.jpg'],
-    like_count: 156,
-    comment_count: 23,
-    view_count: 890,
-    created_at: new Date('2024-03-15'),
-    hospital_name: 'Bệnh viện thẩm mỹ TP.HCM',
-    doctor_name: 'Bác sĩ Trần Văn A',
-    surgery_date: new Date('2024-02-01'),
-    recovery_time: '3 tháng',
-    cost_range: '15-20 triệu VND'
-  };
 }
 
 // 如果没有找到数据，返回404
@@ -70,14 +23,12 @@ if (!shareDetail) {
 // 获取相关分享（随机抽取，排除当前ID）
 let relatedShares = [];
 try {
-  // 获取更多数据以便随机抽取
   const response = await userShareAPI.getList({ 
     limit: 50, 
     status: 'published'
   });
   
   if (response.data && response.data.length > 0) {
-    // 过滤掉当前分享
     const allShares = response.data.filter(share => share.id.toString() !== id);
     
     // 随机打乱数组（Fisher-Yates shuffle）
@@ -86,15 +37,48 @@ try {
       [allShares[i], allShares[j]] = [allShares[j], allShares[i]];
     }
     
-    // 取前6个
     relatedShares = allShares.slice(0, 6);
   }
 } catch (error) {
   console.error('获取相关分享失败:', error);
 }
+
+// 生成SEO优化的Meta信息
+const pageTitle = `${shareDetail.title || 'Chia sẻ trải nghiệm phẫu thuật thẩm mỹ'} | Chia sẻ người dùng`;
+const pageDescription = shareDetail.content 
+  ? shareDetail.content.substring(0, 155).replace(/\n/g, ' ') + '...'
+  : `Chia sẻ trải nghiệm ${shareDetail.surgery_type || 'phẫu thuật thẩm mỹ'} tại ${shareDetail.hospital_name || 'bệnh viện uy tín'}`;
+
+// 生成关键词：手术类型 + 医院名 + 相关标签
+const keywords = [
+  shareDetail.surgery_type || 'phẫu thuật thẩm mỹ',
+  shareDetail.hospital_name || 'bệnh viện thẩm mỹ',
+  'chia sẻ kinh nghiệm',
+  'review thực tế',
+  'trải nghiệm khách hàng',
+  shareDetail.doctor_name ? `bác sĩ ${shareDetail.doctor_name}` : null,
+  shareDetail.recovery_status || 'phục hồi',
+  ...(shareDetail.tags || [])
+].filter(Boolean).join(', ');
+
+// 格式化发布时间
+const publishedTime = shareDetail.created_at 
+  ? new Date(shareDetail.created_at).toISOString()
+  : undefined;
+const modifiedTime = shareDetail.updated_at 
+  ? new Date(shareDetail.updated_at).toISOString()
+  : undefined;
 ---
 
-<Layout title={`${shareDetail.title || 'Chia sẻ trải nghiệm phẫu thuật thẩm mỹ'} | Chia sẻ`}>
+<Layout 
+  title={pageTitle}
+  description={pageDescription}
+  keywords={keywords}
+  type="article"
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+  articleAuthor={shareDetail.user_name || 'Người dùng'}
+>
   <!-- 返回按钮 -->
   <section class="pt-24 pb-6 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">

@@ -12,5 +12,16 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5001
   },
-  integrations: [tailwind()]
+  integrations: [tailwind()],
+  // 性能优化配置
+  compressHTML: true,
+  build: {
+    inlineStylesheets: 'auto'
+  },
+  vite: {
+    build: {
+      cssMinify: true,
+      minify: 'esbuild' // 使用esbuild代替terser，速度更快
+    }
+  }
 });

@@ -8,6 +8,7 @@ import serviceRoutes from './serviceRoutes.js';
 import contactRoutes from './contactRoutes.js';
 import webhookRoutes from './webhookRoutes.js';
 import dqaRoutes from '../dqa/dqaRoutes.js';
+import sitemapPaginatedRoutes from './sitemapPaginatedRoutes.js';
 
 const router = express.Router();
 
@@ -47,6 +48,7 @@ router.use('/api/services', serviceRoutes);
 router.use('/api/contacts', contactRoutes);
 router.use('/api/webhooks', webhookRoutes);
 router.use('/api/dqa', dqaRoutes);
+router.use('/api/sitemap-paginated', sitemapPaginatedRoutes);
 
 // 404处理
 router.use('*', (req, res) => {

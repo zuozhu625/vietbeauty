@@ -6,52 +6,13 @@ import { knowledgeAPI } from '../../utils/api.js';
 // 获取路由参数
 const { id } = Astro.params;
 
-// 为静态生成提供路径
-export async function getStaticPaths() {
-  try {
-    const response = await knowledgeAPI.getList({ limit: 100, status: 'published' });
-    const knowledge = response.data || [];
-    
-    return knowledge.map((item) => ({
-      params: { id: item.id.toString() },
-      props: { knowledge: item }
-    }));
-  } catch (error) {
-    console.error('获取静态路径失败:', error);
-    // 返回一些默认路径
-    return [
-      { params: { id: '1' }, props: { knowledge: null } },
-      { params: { id: '2' }, props: { knowledge: null } },
-      { params: { id: '3' }, props: { knowledge: null } }
-    ];
-  }
-}
-
-// 获取问答详情数据
+// 纯SSR模式：每次请求时动态获取数据
 let knowledgeDetail = null;
 try {
   const response = await knowledgeAPI.getDetail(id);
   knowledgeDetail = response.data;
 } catch (error) {
   console.error('获取问答详情失败:', error);
-  // 使用默认数据作为后备
-  knowledgeDetail = {
-    id: id,
-    question: 'Phẫu thuật mũi cần bao lâu để phục hồi?',
-    answer: 'Thời gian phục hồi phẫu thuật mũi khác nhau tùy theo thể chất cá nhân và phương pháp phẫu thuật. Nhìn chung:\n\n• Phục hồi ban đầu: 1-2 tuần, có thể làm việc và sinh hoạt bình thường\n• Phục hồi cơ bản: 1-3 tháng, ngoại hình ổn định cơ bản\n• Phục hồi hoàn toàn: 6-12 tháng, hiệu quả cuối cùng xuất hiện\n\nLưu ý sau phẫu thuật: Tránh vận động mạnh, giữ vết thương sạch sẽ, tái khám đúng hẹn, tránh va chạm, v.v.',
-    category: 'Phẫu thuật mũi',
-    doctor_name: 'Bác sĩ Trần Văn A',
-    doctor_title: 'Trưởng khoa phẫu thuật thẩm mỹ',
-    doctor_hospital: 'Bệnh viện thẩm mỹ TP.HCM',
-    doctor_experience: '15 năm kinh nghiệm',
-    like_count: 128,
-    view_count: 1250,
-    comment_count: 15,
-    created_at: new Date('2024-03-15'),
-    updated_at: new Date('2024-03-15'),
-    questioner_name: 'Chị Lý',
-    questioner_age: 28
-  };
 }
 
 // 如果没有找到数据，返回404
@@ -71,9 +32,42 @@ try {
 } catch (error) {
   console.error('获取相关问答失败:', error);
 }
+
+// 生成SEO优化的Meta信息
+const pageTitle = `${knowledgeDetail.question} | Hỏi đáp phẫu thuật thẩm mỹ`;
+const pageDescription = knowledgeDetail.answer 
+  ? knowledgeDetail.answer.substring(0, 155).replace(/\n/g, ' ') + '...'
+  : `Bác sĩ ${knowledgeDetail.doctor_name || 'chuyên khoa'} giải đáp: ${knowledgeDetail.question}`;
+
+// 生成关键词：问题分类 + 医院名 + 相关标签
+const keywords = [
+  knowledgeDetail.category,
+  knowledgeDetail.question.split(' ').slice(0, 5).join(' '), // 问题前5个词
+  knowledgeDetail.hospital_name || 'tư vấn bệnh viện',
+  'hỏi đáp bác sĩ',
+  'tư vấn miễn phí',
+  'phẫu thuật thẩm mỹ',
+  ...(knowledgeDetail.tags || [])
+].filter(Boolean).join(', ');
+
+// 格式化发布时间用于结构化数据
+const publishedTime = knowledgeDetail.created_at 
+  ? new Date(knowledgeDetail.created_at).toISOString()
+  : undefined;
+const modifiedTime = knowledgeDetail.updated_at 
+  ? new Date(knowledgeDetail.updated_at).toISOString()
+  : undefined;
 ---
 
-<Layout title={`${knowledgeDetail.question} | Hỏi đáp`}>
+<Layout 
+  title={pageTitle}
+  description={pageDescription}
+  keywords={keywords}
+  type="article"
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+  articleAuthor={knowledgeDetail.doctor_name || 'Bác sĩ chuyên khoa'}
+>
   <!-- 返回按钮 -->
   <section class="pt-24 pb-6 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">

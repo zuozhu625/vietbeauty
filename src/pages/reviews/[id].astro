@@ -103,9 +103,32 @@ function generateStars(rating) {
   }
   return stars;
 }
+
+// 生成SEO优化的Meta信息
+const pageTitle = `${hospital.name} - Đánh giá ${hospital.rating}/5.0 sao | Bệnh viện thẩm mỹ ${hospital.city}`;
+const pageDescription = hospital.description 
+  ? hospital.description.substring(0, 155)
+  : `${hospital.name} tại ${hospital.city} - Đánh giá ${hospital.rating}/5.0 sao từ ${hospital.review_count} khách hàng. ${hospital.specialties?.slice(0, 3).join(', ')}. Địa chỉ: ${hospital.address}`;
+
+// 生成关键词
+const keywords = [
+  hospital.name,
+  `bệnh viện thẩm mỹ ${hospital.city}`,
+  `bệnh viện ${hospital.district}`,
+  ...(hospital.specialties || []),
+  `bệnh viện hạng ${hospital.level || 'A'}`,
+  hospital.type === 'private' ? 'bệnh viện tư nhân' : hospital.type === 'international' ? 'bệnh viện quốc tế' : 'bệnh viện công lập',
+  'đánh giá bệnh viện',
+  'review bệnh viện thẩm mỹ',
+  'phẫu thuật thẩm mỹ uy tín'
+].filter(Boolean).join(', ');
 ---
 
-<Layout title={`${hospital.name} - Phẫu thuật Thẩm mỹ Việt Nam`}>
+<Layout 
+  title={pageTitle}
+  description={pageDescription}
+  keywords={keywords}
+>
   <!-- 面包屑导航 -->
   <section class="pt-4 pb-4 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">

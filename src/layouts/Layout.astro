@@ -10,6 +10,9 @@ export interface Props {
   image?: string;
   type?: 'website' | 'article';
   noindex?: boolean;
+  publishedTime?: string;
+  modifiedTime?: string;
+  articleAuthor?: string;
 }
 
 const { 
@@ -18,10 +21,14 @@ const {
   keywords = "phẫu thuật thẩm mỹ Việt Nam, nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da, bệnh viện thẩm mỹ",
   image = "/images/hero.webp",
   type = "website",
-  noindex = false
+  noindex = false,
+  publishedTime,
+  modifiedTime,
+  articleAuthor = "Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam"
 } = Astro.props;
 
 const SITE_URL = 'https://vietbeauty.top';
+const SITE_NAME = 'Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam';
 const canonicalURL = new URL(Astro.url.pathname, SITE_URL).href;
 const ogImage = new URL(image, SITE_URL).href;
 
@@ -34,7 +41,7 @@ const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'productio
   <head>
     <!-- 基础 Meta 标签 -->
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     
     <!-- SEO Meta 标签 -->
@@ -50,6 +57,14 @@ const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'productio
       <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     )}
     
+    <!-- 移动端优化 -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content={SITE_NAME} />
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="theme-color" content="#ec4899" />
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonicalURL} />
@@ -58,29 +73,89 @@ const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'productio
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:site_name" content="Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam" />
+    <meta property="og:image:alt" content={title} />
+    <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:locale" content="vi_VN" />
+    {type === 'article' && publishedTime && (
+      <meta property="article:published_time" content={publishedTime} />
+    )}
+    {type === 'article' && modifiedTime && (
+      <meta property="article:modified_time" content={modifiedTime} />
+    )}
+    {type === 'article' && (
+      <meta property="article:author" content={articleAuthor} />
+    )}
+    <meta property="fb:app_id" content="YOUR_FB_APP_ID" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@vietbeauty" />
+    <meta name="twitter:creator" content="@vietbeauty" />
     <meta name="twitter:url" content={canonicalURL} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={title} />
     
-    <!-- Additional SEO -->
-    <meta name="author" content="Việt Nam Lý Nhân Thẩm Mỹ Chỉ Nam" />
-    <meta name="language" content="Vietnamese" />
+    <!-- 地理位置和语言 -->
     <meta name="geo.region" content="VN" />
     <meta name="geo.placename" content="Vietnam" />
+    <meta name="geo.position" content="10.8231;106.6297" />
+    <meta name="ICBM" content="10.8231, 106.6297" />
+    <meta name="language" content="vi" />
+    <meta name="content-language" content="vi-VN" />
     
-    <!-- Favicon -->
+    <!-- Additional SEO -->
+    <meta name="author" content={articleAuthor} />
+    <meta name="publisher" content={SITE_NAME} />
+    <meta name="copyright" content={`© ${new Date().getFullYear()} ${SITE_NAME}`} />
+    <meta name="rating" content="general" />
+    <meta name="distribution" content="global" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="coverage" content="Worldwide" />
+    <meta name="target" content="all" />
+    <meta name="audience" content="all" />
+    
+    <!-- 联系方式结构化数据 -->
+    <meta name="contact" content="qikaka625@gmail.com" />
+    <meta name="reply-to" content="qikaka625@gmail.com" />
+    
+    <!-- 分类和主题 -->
+    <meta name="category" content="Health & Beauty" />
+    <meta name="subject" content="Phẫu thuật thẩm mỹ Việt Nam" />
+    
+    <!-- Favicon 和图标 -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#ec4899" />
+    <link rel="shortcut icon" href="/favicon.svg" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/site.webmanifest" />
     
     <!-- DNS Prefetch for Performance -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Alternate Languages (可根据需要添加其他语言版本) -->
+    <link rel="alternate" hreflang="vi-VN" href={canonicalURL} />
+    <link rel="alternate" hreflang="vi" href={canonicalURL} />
+    <link rel="alternate" hreflang="x-default" href={SITE_URL} />
+    
+    <!-- RSS Feed (如果有的话) -->
+    <!-- <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href={`${SITE_URL}/rss.xml`} /> -->
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     
     <!-- Custom Head Content -->
     <slot name="head" />

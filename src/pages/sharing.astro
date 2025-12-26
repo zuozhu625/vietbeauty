@@ -77,9 +77,9 @@ try {
 ---
 
 <Layout 
-  title="Chia sẻ kinh nghiệm phẫu thuật thẩm mỹ - Câu chuyện thật từ 1000+ khách hàng"
-  description="Chia sẻ kinh nghiệm phẫu thuật thẩm mỹ thực tế từ 1000+ khách hàng. Review chi tiết về nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, làm đẹp da tại các bệnh viện uy tín TP.HCM, Hà Nội, Đà Nẵng. Xem ảnh trước sau, đánh giá bác sĩ, chi phí thực tế, thời gian hồi phục"
-  keywords="chia sẻ kinh nghiệm phẫu thuật thẩm mỹ, review bệnh viện thẩm mỹ uy tín, kinh nghiệm nâng mũi thành công, chia sẻ cắt mí đẹp, trải nghiệm gọt mặt thực tế, review nâng ngực an toàn, chia sẻ hút mỡ bụng, kinh nghiệm làm đẹp da, đánh giá bác sĩ thẩm mỹ, ảnh trước sau phẫu thuật, chi phí thực tế phẫu thuật, bệnh viện nào tốt nhất, kinh nghiệm khách hàng thực tế, review chân thực, phẫu thuật TP.HCM, thẩm mỹ Hà Nội, nâng mũi Đà Nẵng, cắt mí Hải Phòng, kinh nghiệm chọn bệnh viện, review bác sĩ giỏi, chia sẻ chi phí, thời gian hồi phục, kết quả phẫu thuật, quá trình phẫu thuật, cảm nhận sau phẫu thuật, lời khuyên cho người mới, kinh nghiệm chọn bác sĩ, review dịch vụ bệnh viện, đánh giá chất lượng, chia sẻ video, ảnh thực tế, kinh nghiệm chuẩn bị, review phục hồi sau sinh, thẩm mỹ khuôn mặt, thẩm mỹ ngực, hút mỡ tạo dáng, review botox, kinh nghiệm căng da, chia sẻ niềng răng, review thành công, kinh nghiệm thất bại, lưu ý khi phẫu thuật"
+  title="230+ Chia sẻ kinh nghiệm phẫu thuật thẩm mỹ | Review thật từ khách hàng"
+  description="Chia sẻ kinh nghiệm phẫu thuật thẩm mỹ thực tế từ khách hàng. Review chi tiết nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ tại bệnh viện uy tín TP.HCM, Hà Nội, Đà Nẵng. Ảnh trước sau, chi phí, hồi phục"
+  keywords="chia sẻ kinh nghiệm phẫu thuật, review bệnh viện thẩm mỹ, kinh nghiệm nâng mũi, cắt mí, gọt mặt, nâng ngực, hút mỡ, đánh giá bác sĩ, ảnh trước sau, chi phí thực tế, thời gian hồi phục, TP.HCM, Hà Nội"
 >
   <!-- Đầu trang -->
   <section class="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
@@ -235,47 +235,103 @@ try {
         })}
       </div>
 
-      <!-- Điều hướng phân trang -->
+      <!-- Điều hướng phân trang nâng cao -->
       {totalPages > 1 && (
-        <div class="flex justify-center items-center mt-12 space-x-2">
-          <!-- Trang trước -->
-          {page > 1 && (
-            <a href={`/sharing?page=${page - 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
-              Trang trước
-            </a>
-          )}
+        <div class="mt-12">
+          <!-- Thông tin phân trang -->
+          <div class="text-center mb-6">
+            <p class="text-white/70 text-sm">
+              Trang {page} / {totalPages} ({totalCount} chia sẻ)
+            </p>
+          </div>
           
-          <!-- Số trang -->
-          {page > 3 && totalPages > 5 && (
-            <a href={`/sharing?page=1${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">1</a>
-          )}
-          {page > 4 && totalPages > 5 && (
-            <span class="px-2 text-white/50">...</span>
-          )}
+          <!-- Nút phân trang -->
+          <div class="flex justify-center items-center flex-wrap gap-2">
+            {(() => {
+              const pagesPerGroup = 20;
+              const currentGroup = Math.floor((page - 1) / pagesPerGroup);
+              const groupStartPage = currentGroup * pagesPerGroup + 1;
+              const groupEndPage = Math.min(groupStartPage + pagesPerGroup - 1, totalPages);
+              
+              return [
+                // Nút nhóm trước
+                currentGroup > 0 && (
+                  <a 
+                    href={`/sharing?page=${(currentGroup - 1) * pagesPerGroup + 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`}
+                    class="px-3 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all text-sm font-medium"
+                  >
+                    ← {(currentGroup - 1) * pagesPerGroup + 1}-{Math.min(currentGroup * pagesPerGroup, totalPages)}
+                  </a>
+                ),
+                
+                // Nút trang trước
+                page > 1 && (
+                  <a 
+                    href={`/sharing?page=${page - 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`}
+                    class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors"
+                  >
+                    Trước
+                  </a>
+                ),
+                
+                // Các nút trang
+                ...Array.from({length: groupEndPage - groupStartPage + 1}, (_, index) => {
+                  const pageNum = groupStartPage + index;
+                  return (
+                    <a 
+                      href={`/sharing?page=${pageNum}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`}
+                      class={pageNum === page 
+                        ? 'px-3 py-2 rounded-lg transition-all min-w-[40px] text-center bg-blue-500 text-white font-semibold'
+                        : 'px-3 py-2 rounded-lg transition-all min-w-[40px] text-center bg-white/10 text-white/70 hover:bg-white/20'
+                      }
+                    >
+                      {pageNum}
+                    </a>
+                  );
+                }),
+                
+                // Nút trang sau
+                page < totalPages && (
+                  <a 
+                    href={`/sharing?page=${page + 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`}
+                    class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors"
+                  >
+                    Sau
+                  </a>
+                ),
+                
+                // Nút nhóm sau
+                groupEndPage < totalPages && (
+                  <a 
+                    href={`/sharing?page=${groupEndPage + 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`}
+                    class="px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all text-sm font-medium"
+                  >
+                    {groupEndPage + 1}-{Math.min(groupEndPage + pagesPerGroup, totalPages)} →
+                  </a>
+                )
+              ].filter(Boolean);
+            })()}
+          </div>
           
-          {page > 2 && (
-            <a href={`/sharing?page=${page - 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page - 1}</a>
-          )}
-          
-          <a href={`/sharing?page=${page}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-blue-500 text-white rounded-lg">{page}</a>
-          
-          {page < totalPages - 1 && (
-            <a href={`/sharing?page=${page + 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{page + 1}</a>
-          )}
-          
-          {page < totalPages - 3 && totalPages > 5 && (
-            <span class="px-2 text-white/50">...</span>
-          )}
-          {page < totalPages - 2 && totalPages > 5 && (
-            <a href={`/sharing?page=${totalPages}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">{totalPages}</a>
-          )}
-          
-          <!-- Trang sau -->
-          {page < totalPages && (
-            <a href={`/sharing?page=${page + 1}${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}`} class="px-4 py-2 bg-white/10 text-white/70 rounded-lg hover:bg-white/20 transition-colors">
-              Trang sau
-            </a>
-          )}
+          <!-- Chuyển trang nhanh -->
+          <div class="flex justify-center items-center mt-6 gap-3">
+            <span class="text-white/70 text-sm">Chuyển đến:</span>
+            <input 
+              type="number" 
+              min="1" 
+              max={totalPages}
+              placeholder="Trang"
+              class="w-20 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center focus:outline-none focus:border-blue-400 focus:bg-white/20"
+              onkeypress={`
+                if (event.key === 'Enter') {
+                  const pageNum = parseInt(event.target.value);
+                  if (pageNum >= 1 && pageNum <= ${totalPages}) {
+                    window.location.href = '/sharing?page=' + pageNum + '${surgeryType ? `&surgery_type=${encodeURIComponent(surgeryType)}` : ''}';
+                  }
+                }
+              `}
+            />
+          </div>
         </div>
       )}
     </div>

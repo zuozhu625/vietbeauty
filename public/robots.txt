@@ -1,0 +1,23 @@
+# Vietnam Medical Beauty SEO Configuration
+# Site: https://vietbeauty.top
+
+User-agent: *
+Allow: /
+
+# Disallow admin and API endpoints
+Disallow: /api/
+Disallow: /admin/
+
+# Allow all content pages
+Allow: /services
+Allow: /reviews
+Allow: /knowledge
+Allow: /sharing
+Allow: /contact
+
+# Sitemap
+Sitemap: https://vietbeauty.top/sitemap-index-dynamic.xml
+
+# Crawl-delay (be nice to servers)
+Crawl-delay: 1
+
