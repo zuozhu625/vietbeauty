@@ -12,13 +12,47 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# custom logs
+logs/
+backend/logs/
+*.log
+
+# database files
+backend/data/*.db
+backend/data/*.sqlite
+backend/data/*.sql
+*.db
+*.sqlite
+temp_data/
 
 # environment variables
 .env
 .env.production
+.env.local
 
 # macOS-specific files
 .DS_Store
 
 # jetbrains setting folder
 .idea/
+
+# vscode
+.vscode/
+
+# temporary files
+*.tmp
+*.temp
+*.bak
+
+# nginx config (server specific)
+nginx-*.conf
+
+# scripts (some may contain sensitive data)
+scripts/*.sh
+!scripts/seo-check.sh  # keep this one as it's useful
+
+# zip files
+*.zip
+
+# docs that may contain sensitive data
+docs/seo*/
